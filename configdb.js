@@ -19,27 +19,42 @@ var Waterline=require("waterline")
     connections:
     {
 
-      mysql: {
-            adapter   : 'mysql',
-            host      : 'localhost',
-            port      : 3306,
-            user      : 'root',
-            password  : '',
-            database  : 'BordeJal',
-            charset   : 'utf8'
-            // OR (explicit sets take precedence)
-           // module    : 'sails-mysql',
-            //url       : 'mysql2://USER:PASSWORD@HOST:PORT/DATABASENAME'
+      // mysql: {
+      //       adapter   : 'mysql',
+      //       host      : 'localhost',
+      //       port      : 3306,
+      //       user      : 'root',
+      //       password  : '',
+      //       database  : 'BordeJal',
+      //       charset   : 'utf8'
+      //       // OR (explicit sets take precedence)
+      //      // module    : 'sails-mysql',
+      //       //url       : 'mysql2://USER:PASSWORD@HOST:PORT/DATABASENAME'
 
-            // Optional
-            //charset   : 'utf8'
-            //collation : 'utf8_swedish_ci'
-       },
-       mongodb: {
+      //       // Optional
+      //       //charset   : 'utf8'
+      //       //collation : 'utf8_swedish_ci'
+      //  },
+      //  mongodb: {
+      //   adapter: 'mongo',
+      //   host: 'localhost', // defaults to `localhost` if omitted
+      //   port: 27017, // defaults to 27017 if omitted
+      //   database: 'BordeJal' // or omit if not relevant
+      // },
+      // remote: {
+      //   adapter: 'mongo',
+      //   host: 'apollo.modulusmongo.net', // defaults to `localhost` if omitted
+      //   port: 27017, // defaults to 27017 if omitted
+      //   database: 'inum8yJu', // or omit if not relevant
+      //   user      : 'root',
+      //       password  : '1234'
+      // }
+      local: {
         adapter: 'mongo',
-        host: 'localhost', // defaults to `localhost` if omitted
         port: 27017, // defaults to 27017 if omitted
-        database: 'BordeJal' // or omit if not relevant
+        database: 'bordeFed' // or omit if not relevant
+        // user      : 'root',
+        //     password  : '1234'
       }
 
     },
@@ -51,7 +66,7 @@ var Waterline=require("waterline")
 
   };
 
-var conn_default = "mongodb";
+var conn_default = "local";
 
 // Event
 var diputados = Waterline.Collection.extend({
@@ -62,8 +77,8 @@ var diputados = Waterline.Collection.extend({
     id_dip: {
       type: 'integer'
     },
-    idinfolej:{
-      type: 'integer'
+    crawlurl: {
+      type: 'string' //url dl crawling de orígen
     },
     name: {
       type: 'string'
@@ -80,10 +95,46 @@ var diputados = Waterline.Collection.extend({
     office: {
       type: 'string'
     },
+    type: {
+      type: 'string'
+    },
+    gender: {
+      type: 'string'
+    },
+    temas: {
+      type: 'json'
+    },
+    facebook: {
+      type: 'string'
+    },
+    twitter: {
+      type: 'string'
+    },
+    eleccion: {
+      type: 'string'  //RP,MR,PM
+    },
+    circunscripcion: {
+      type: 'string'  
+    },
+    distrito: {
+      type: 'string'  
+    },
+    camara: {
+      type: 'string' //senadores, diputados
+    },
+    ordenDeGobierno: {
+      type: 'string' //federal, estatal
+    },
+    estado: {
+      type: 'string' //Jalisco, federal etc. 
+    },
     news: {
       collection: 'news',
       via: 'mentions',
-      dominant:true
+    },
+    work: {
+      collection: 'trabajo',
+      via: 'author',
     },
     comision: {
       collection: 'comisiones',
@@ -97,7 +148,13 @@ var comisiones = Waterline.Collection.extend({
   connection: conn_default,
   tableName: "comisiones",
   attributes: {   
-    name: {
+    namecom: {
+      type: 'string',
+    },
+    puestocom: {
+      type: 'string',
+    },
+    linkcom: {
       type: 'string',
     },
     members: {
@@ -108,6 +165,49 @@ var comisiones = Waterline.Collection.extend({
   }
 });
 orm.loadCollection(comisiones);
+var trabajo = Waterline.Collection.extend({
+  identity: 'trabajo',
+  connection: conn_default,
+  tableName: "trabajo",
+  attributes: {   
+    estado: {
+      type: 'string', //i || pda
+    },
+     fecha: {
+      type: 'string',
+    },
+    type: {
+      type: 'string',
+    },
+    resumen: {
+      type: 'string',
+    },
+    subtype: {
+      type: 'string',
+    },
+    origen: {
+      type: 'string',
+    },
+    presentacion: {
+      type: 'string',
+    },
+    title: {
+      type: 'string'
+    },
+    link: {
+      type: 'string',
+    },
+    com: {
+      type: 'string',
+    },
+    author: {
+      collection: 'diputados',
+      via: 'work',
+    },
+
+  }
+});
+orm.loadCollection(trabajo);
 var news = Waterline.Collection.extend({
   identity: 'news',
   connection: conn_default,
