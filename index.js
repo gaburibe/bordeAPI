@@ -112,7 +112,15 @@ app.get('/crawl/federal/pas',function(req, res, next) {
 app.get('/borde/federal/historico/sen',function(req, res, next) {
   borde_fed.senH(req, res, app, next);
 })
-
+app.get('/borde/federal/historico/dip',function(req, res, next) {
+  borde_fed.dipH(req, res, app, next);
+})
+app.get('/borde/federal/historico/dipchafa',function(req, res, next) {
+  borde_fed.dipchafa(req, res, app, next);
+})
+app.get('/borde/federal/historico/senchafa',function(req, res, next) {
+  borde_fed.senchafa(req, res, app, next);
+})
 // app.get('/crawl/federal/pas',function(req, res, next) {
 //   crawl_fed.pas(req, res, app, next);
 // })

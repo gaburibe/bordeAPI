@@ -182,7 +182,7 @@ module.exports = module.export =
 				// 	console.log(results);
 				//     // results is now equal to: {one: 1, two: 2}
 				// });
-				for (var i = 100; i < 130; i++){//list.length; i++) {
+				for (var i = 0; i < 60; i++){//list.length; i++) {
 					subject=list[i];
 
 					processSen(subject,app,function( senador ){
@@ -225,7 +225,6 @@ module.exports = module.export =
 		        	if (link) {
 		        		listlinks.push(link);
 		        		console.log(",",'"http://www.senado.gob.mx/'+link+'"');
-		        		//processSen('http://www.senado.gob.mx/'+link,res,app);
 		        	}
 
 		        	
@@ -235,7 +234,6 @@ module.exports = module.export =
 		for (var i = 0; i < alf.length; i++) {
 			c.queue('http://www.senado.gob.mx/index.php?ver=int&mn=4&sm=1&str='+alf[i]);
 		};
-		//processSen('http://www.senado.gob.mx/index.php?ver=int&mn=4&sm=6&id=617',res,app);
 	},
 	iniciativas: function ( req, res, app, cb ){
 		console.log("iniciativas")
@@ -317,7 +315,7 @@ module.exports = module.export =
 						});
 		        		//console.log(index,"-->",ini)
 		        		inis.push(ini);
-		        		addinis(ini,app,function(err){
+		        		addinis(ini,[],app,function(err){
 		        			console.log("dd->"+err);
 		        		});
 		        		
@@ -327,231 +325,138 @@ module.exports = module.export =
 				//addinis(inis,app);
 		    }
 		});
-		for (var i = 1; i <= 31; i++) { //son 108
-			//http://sil.gobernacion.gob.mx/Busquedas/Basica/ResultadosBusquedaBasica.php?SID=9870558ae8df7b214357e5091991ce8b&Serial=1cd82af36832ddc61fd0dbd38bc1334a&Reg=1485&Origen=BB&Paginas=50
-			//http://sil.gobernacion.gob.mx/Busquedas/Basica/ResultadosBusquedaBasica.php?SID=9870558ae8df7b214357e5091991ce8b&Origen=BB&Serial=1cd82af36832ddc61fd0dbd38bc1334a&Reg=1485&Paginas=50&pagina=30
-			//c.queue('http://sil.gobernacion.gob.mx/Busquedas/Basica/ResultadosBusquedaBasica.php?SID=014db79cefe66735761e179d3e83a74f&Origen=BB&Serial=008b138eb49d38e3060752629e8c2b9a&Reg=5357&Paginas=50&pagina='+i); //108
-			c.queue('http://sil.gobernacion.gob.mx/Busquedas/Basica/ResultadosBusquedaBasica.php?SID=598f45637055570a61901cc60f710844&Origen=BB&Serial=61c9eab0ce644ec8e2bdb8198e325f1a&Reg=1504&Paginas=50&pagina='+i); //31
+		for (var i = 1; i <= 54; i++) { //son 108
+			
+			c.queue('http://sil.gobernacion.gob.mx/Busquedas/Basica/ResultadosBusquedaBasica.php?SID=794b7fb8c30189fc1ebd537bf0340577&Origen=BB&Serial=2e4f02f769de50ea3f2af91be9353619&Reg=5357&Paginas=100&pagina='+i); //108
+			//c.queue('http://sil.gobernacion.gob.mx/Busquedas/Basica/ResultadosBusquedaBasica.php?SID=89491a500e9f8eca9b84db1b0f9de8a2&Serial=b44c1a966e8125f0d6e878d291773ac2&Reg=1543&Origen=BB&Paginas='+i); //31
 		}
 
 	},
 	pas: function ( req, res, app, cb ){
 		console.log("puntos de acuerdo")
-		var c = new Crawler({
-		    maxConnections : 100,
-		    forceUTF8:true,		    
-		    callback : function (error, result, $) {
-		    	inis=[];
-		    	console.log("--");
-		    	tablegen=$('table[width="1000px"]');
-		        num=0;
-		        dipobject={};
-		        tablegen.find('tr').each(function(index, datos) {
-		        	console.log("-------->");
-		        	ini={};
-		        	tds=$(datos).find('td');
-
-		   //      	test=tds[0].text()
-		   //      	if (test=="Iniciativa") {ini.type="i"}
-		   //      	ini.resumen=tds[1].text()
-		   //      	ini.subtype=$(datos).tds[2].text()
-		   //      	tt2=tds[3].text()
-		   //      	if (tt2.indexOf("Diputados") > -1) {ini.camara="diputados";}
-					// else if (tt2.indexOf("Senadores") > -1) {ini.camara="senadores";}
-					// ini.presentacion=tds[4].text()
-					// ini.autor=cleanText(tds[5].text() );
-					// ini.partido=tds[6].text()
-					// ini.legislatura=tds[7].text()
-					// ini.turnado=tds[8].text()
-					// ini.estado=tds[9].text()
-
-		   //      	test=$(datos).children('td:nth-child(1)').text()
-		   //      	if (test=="Iniciativa") {ini.type="i"}
-		   //      	ini.resumen=$(datos).children('td:nth-child(2)').text()
-		   //      	ini.subtype=$(datos).children('td:nth-child(3)').text()
-		   //      	tt2=$(datos).children('td:nth-child(4)').text()
-		   //      	if (tt2.indexOf("Diputados") > -1) {ini.camara="diputados";}
-					// else if (tt2.indexOf("Senadores") > -1) {ini.camara="senadores";}
-					// ini.presentacion=$(datos).children('td:nth-child(5)').text()
-					// ini.autor=cleanText($(datos).children('td:nth-child(6)').text() );
-					// ini.partido=$(datos).children('td:nth-child(7)').text()
-					// ini.legislatura=$(datos).children('td:nth-child(8)').text()
-					// ini.turnado=$(datos).children('td:nth-child(9)').text()
-					// ini.estado=$(datos).children('td:nth-child(10)').text()
-
-		        	$(datos).find('td').each(function(index2,datos2){
-		        	 	test8859=$(datos2).text();
-						var test = test8859;//decodeURIComponent(unescape(test8859));
-		        	 	switch(index2) {
-						    case 1:
-						        if (test.indexOf("cuerdo")> -1) {ini.type="pa"}
-						        break;
-						    case 2:
-						        ini.resumen=test;
-						        break;
-						    case 3:
-						        ini.subtype=test;
-						        break;
-						    case 4:
-						        ini.origen=test;
-						        if (test.indexOf("Diputados") > -1) {ini.camara="diputados";}
-						        else if (test.indexOf("Senadores") > -1) {ini.camara="senadores";}
-						        break;
-						    case 5:
-						        ini.presentacion=test;
-						        break;
-						    case 6:
-						        ini.autor=cleanText(test);
-						        break;
-						    case 7:
-						        ini.partido=test;
-						        break;
-						    case 8:
-						        ini.legislatura=test;
-						        break;
-						    case 9:
-						        ini.turnado=test;
-						        break;
-						    case 10:
-						        ini.estado=test;
-						        break;
-						    case 11:
-						        ini.tema=test;
-						        break;
-						}
-
-		        	 	//console.log(index2+"->"+test);
-		        	})
-						ini.ordenDeGobierno="Federal";
-						app.models[ "trabajo" ].find({resumen:ini.resumen}).exec(function (err, usersNamedFinn){
-						  if ("err",err) {
-						    console.log(err);
-						  }
-						  if (usersNamedFinn.length==0) {
-						  	app.models[ "trabajo" ].create(ini).exec(function createCB(err, created){
-					            console.log("errcreating:",err);
-					            console.log("body",created);
-					        });
-						  }
-						  else{
-						  	console.log("existed",ini.resumen);
-						  }
-						  
-						});
-		        		//console.log(index,"-->",ini)
-		        		inis.push(ini);
-		        		addinis(ini,app,function(err){
-		        			console.log("dd->"+err);
-		        		});
-		        		
-					
-		        });
-				console.log(inis);
-				//addinis(inis,app);
-		    }
-		});
-		for (var i = 1; i <= 10; i++) { //son 93
-			c.queue('http://sil.gobernacion.gob.mx/Busquedas/Basica/ResultadosBusquedaBasica.php?SID=bd08d578ad9f0e10f37cdb8fdc7b5fa5&Serial=8e2b4b44b9b3354bac655a6e23cd5258&Reg=146&Origen=BB&Paginas=50&pagina='+i);
-		}
 		console.log("P A's")
 		var c = new Crawler({
 		    maxConnections : 100,
 		    forceUTF8:true,		    
 		    callback : function (error, result, $) {
+		    	app.models[ "diputados" ].find({ camara:"senadores" , ordenDeGobierno: "Federal" }).exec(function (err, dips){
+					  if (err) {
+					    console.log(err);
+					  }
+					  else{
+					  	console.log('Number dips:',"senadores","Federal", dips.length);
+					  	console.log("uri",result.uri);
+				    	inis=[];
+				    	console.log("--");
+				    	tablegen=$('table[width="1000px"]');
+				        num=0;
+				        dipobject={};
+				        tablegen.find('tr').each(function(index, datos) {
+				        	console.log("-------->");
+				        	ini={};
+				        	tds=$(datos).find('td');
 
-		    	console.log("uri",result.uri);
-		    	inis=[];
-		    	console.log("--");
-		    	tablegen=$('table[width="1000px"]');
-		        num=0;
-		        dipobject={};
-		        tablegen.find('tr').each(function(index, datos) {
-		        	console.log("-------->");
-		        	ini={};
-		        	tds=$(datos).find('td');
+				        	$(datos).find('td').each(function(index2,datos2){
+				        	 	test8859=$(datos2).text();
+								var test = test8859;//decodeURIComponent(unescape(test8859));
+				        	 	switch(index2) {
+								    case 1:
+								        ini.type="pa";
+								        if (test=="Iniciativa") {ini.type="i"}
+								        // ini.type="pa"
+								        break;
+								    case 2:
+								        ini.resumen=test;
+								        break;
+								    case 3:
+								        ini.subtype=test;
+								        break;
+								    case 4:
+								        ini.origen=test;
+								        if (test.indexOf("Diputados") > -1) {ini.camara="diputados";}
+								        else if (test.indexOf("Senadores") > -1) {ini.camara="senadores";}
+								        break;
+								    case 5:
+								        ini.presentacion=test;
+								        break;
+								    case 6:
+								        ini.autor=cleanText(test);
+								        break;
+								    case 7:
+								        ini.partido=test;
+								        break;
+								    case 8:
+								        ini.legislatura=test.trim(); //LXIII
 
-		        	$(datos).find('td').each(function(index2,datos2){
-		        	 	test8859=$(datos2).text();
-						var test = test8859;//decodeURIComponent(unescape(test8859));
-		        	 	switch(index2) {
-						    case 1:
-						        if (test=="Acuerdo parlamentario") {ini.type="pa"}
-						        ini.type="pa"
-						        break;
-						    case 2:
-						        ini.resumen=test;
-						        break;
-						    case 3:
-						        ini.subtype=test;
-						        break;
-						    case 4:
-						        ini.origen=test;
-						        if (test.indexOf("Diputados") > -1) {ini.camara="diputados";}
-						        else if (test.indexOf("Senadores") > -1) {ini.camara="senadores";}
-						        break;
-						    case 5:
-						        ini.presentacion=test;
-						        break;
-						    case 6:
-						        ini.autor=cleanText(test);
-						        break;
-						    case 7:
-						        ini.partido=test;
-						        break;
-						    case 8:
-						        ini.legislatura=test.trim(); //LXIII
+								        break;
+								    case 9:
+								        ini.turnado=test;
+								        break;
+								    case 10:
+								        ini.estado=test;
+								        break;
+								    case 11:
+								        ini.tema=test;
+								        break;
+								}
 
-						        break;
-						    case 9:
-						        ini.turnado=test;
-						        break;
-						    case 10:
-						        ini.estado=test;
-						        break;
-						    case 11:
-						        ini.tema=test;
-						        break;
-						}
+				        	 	//console.log(index2+"->"+test);
+				        	})
+								ini.ordenDeGobierno="Federal";
+								app.models[ "trabajo" ].find({resumen:ini.resumen}).exec(function (err, usersNamedFinn){
+								  if ("err",err) {
+								    console.log(err);
+								  }
+								  if (ini.legislatura && ini.legislatura.length() > 2) {
+								  	app.models[ "trabajo" ].create(ini).exec(function createCB(err, created){
+							            console.log("errcreating:",err);
+							            console.log("body",created);
+							        });
+								  }
+								  else{
+								  	console.log("existed",ini.resumen);
+								  }
+								  
+								});
+				        		//console.log(index,"-->",ini)
+				        		inis.push(ini);
+				        		addinis(ini,dips,app,function(err){
+				        			console.log("dd->"+err);
+				        		});
+				        		
+				        		
+							
+				        });
+						console.log(inis);
+					  }
+				});
 
-		        	 	//console.log(index2+"->"+test);
-		        	})
-						ini.ordenDeGobierno="Federal";
-						app.models[ "trabajo" ].find({resumen:ini.resumen}).exec(function (err, usersNamedFinn){
-						  if ("err",err) {
-						    console.log(err);
-						  }
-						  if (ini.legislatura && ini.legislatura.length() > 2) {
-						  	app.models[ "trabajo" ].create(ini).exec(function createCB(err, created){
-					            console.log("errcreating:",err);
-					            console.log("body",created);
-					        });
-						  }
-						  else{
-						  	console.log("existed",ini.resumen);
-						  }
-						  
-						});
-		        		//console.log(index,"-->",ini)
-		        		inis.push(ini);
-		        		addinis(ini,app,function(err){
-		        			console.log("dd->"+err);
-		        		});
-		        		
-					
-		        });
-				console.log(inis);
+		    	
 				//addinis(inis,app);
 		    }
 		});
-		for (var i = 1; i <= 10; i++) { 
-			//http://sil.gobernacion.gob.mx/Busquedas/Basica/ResultadosBusquedaBasica.php?SID=9870558ae8df7b214357e5091991ce8b&Serial=1cd82af36832ddc61fd0dbd38bc1334a&Reg=1485&Origen=BB&Paginas=50
-			//http://sil.gobernacion.gob.mx/Busquedas/Basica/ResultadosBusquedaBasica.php?SID=9870558ae8df7b214357e5091991ce8b&Origen=BB&Serial=1cd82af36832ddc61fd0dbd38bc1334a&Reg=1485&Paginas=50&pagina=30
-			//c.queue('http://sil.gobernacion.gob.mx/Busquedas/Basica/ResultadosBusquedaBasica.php?SID=0f836daa4444131ad6c1b09c21802cb1&Origen=BB&Serial=1c1bbb667cef115b9f20a0533deda532&Reg=490&Paginas=50&pagina='+i); //10
-			c.queue('http://sil.gobernacion.gob.mx/Busquedas/Basica/ResultadosBusquedaBasica.php?SID=743fa67f508b35669e027a9345d9df81&Serial=87bbb4950c600e3ae3f9f1dfede426af&Reg=146&Origen=BB&Paginas=50&pagina='+i); //4
+		////Inis
+		// for (var i = 1; i <= 16; i++) {  //xiii
+		// 	c.queue('http://sil.gobernacion.gob.mx/Busquedas/Basica/ResultadosBusquedaBasica.php?SID=23579d8bd1d3c412c37a08e95bf07b09&Origen=BB&Serial=e95932f521c18293d9b9363384b3a282&Reg=1563&Paginas=100&pagina='+i); //4
+		// }
+		// for (var i = 1; i <= 54; i++) {  //xii
+		// 	c.queue('http://sil.gobernacion.gob.mx/Busquedas/Basica/ResultadosBusquedaBasica.php?SID=2cd6c607634434ec8f53775e98529189&Origen=BB&Serial=85b6573d515be9f60877151efdca256a&Reg=5357&Paginas=100&pagina='+i); //4
+		// }
+		////pas
+		for (var i = 1; i <= 27; i++) {  //xiii
+			c.queue('http://sil.gobernacion.gob.mx/Busquedas/Basica/ResultadosBusquedaBasica.php?SID=f16d7a4f419ea06a57abbe34470d1c22&Origen=BB&Serial=471c770316700be0e8a9af86bab1ff94&Reg=2611&Paginas=100&pagina='+i); //4
 		}
+		for (var i = 1; i <= 85; i++) {  //xii
+			c.queue('http://sil.gobernacion.gob.mx/Busquedas/Basica/ResultadosBusquedaBasica.php?SID=71acdf5a255ccf13a8b41fefdafd42e0&Origen=BB&Serial=9d116a115c9fd2b4b3c81db52dcfc651&Reg=8456&Paginas=100&pagina='+i); //4
+		}
+		// for (var i = 1; i <= 85; i++) { 
+
+		// 	//c.queue('http://sil.gobernacion.gob.mx/Busquedas/Basica/ResultadosBusquedaBasica.php?SID=1b7fe5faf68c057808cda1c17af5b9b9&Origen=BB&Serial=11a35874e082f61deecbb96264b823ae&Reg=2562&Paginas=100&pagina='+i); //10
+		// 	c.queue('http://sil.gobernacion.gob.mx/Busquedas/Basica/ResultadosBusquedaBasica.php?SID=7609bda38979160484afd0b3c25615d3&Origen=BB&Serial=ca51c60679cb46634640e754138238fe&Reg=8455&Paginas=100&pagina='+i); //4
+		// }
 	}
 }
-function addinis(ini,app,done){
+function addinis(ini,dips,app,done){
 	if(ini.type=="i" || ini.type=="pa"){
 		app.models[ "trabajo" ].find({resumen:ini.resumen}).exec(function (err, usersNamedFinn){
 		  if ("err",err) {
@@ -559,9 +464,31 @@ function addinis(ini,app,done){
 		  }
 		  if (usersNamedFinn.length==0) {
 		  	app.models[ "trabajo" ].create(ini).exec(function createCB(err, created){
-	            console.log("errcreating:",err);
-	            console.log("body",created);
-	            done(null);
+		  		if(!err && created.autor){
+		  			for (var i = 0; i < dips.length; i++) {
+			  			name=dips[i].name.toLowerCase();
+	        			autor=created.autor.toLowerCase();
+						if (autor.indexOf(name)>-1 && name.length>2) {
+							
+							app.models[ "diputados" ].find({id:dips[i].id}).exec(function(e,r){
+							  r[0].work.add(created.id);
+							  r[0].save(function(err,res){
+							    console.log("link saved",res);
+							  });
+							});
+
+							console.log("linkin",name,autor);
+						}
+	        		}
+		            console.log("errcreating:",err);
+		            console.log("body",created);
+		            done(null);
+		  		}
+		  		else{
+		  			done(null);
+		  		}
+		  		
+	            
 	        });
 		  }
 		  else{
@@ -782,26 +709,33 @@ function processSen(subject,app,done){
 			////////////
 			d.queue("http://www.senado.gob.mx/index.php?ver=sen&mn=7&sm=3&id="+subject);
         },
-        function(next){
+        function(next){   //DEBATE
         	var e = new Crawler({
 			    maxConnections : 100,
 			    forceUTF8:true,
 			    callback : function (error, result, $) {
+			    	tot={}
 			    	interv=$('table[cellspacing="0"]');
 			    	inter={};
+			    	intercomp=[];
 			    	$('table[cellspacing="0"]').each(function(index, datos) {
+			    		link=$(datos).find("a").attr("href")
 			    		tt=$(datos).text();
 			    		fecha=$(datos).find("strong").last().text();			    		
 			    		nums=fecha.split(" de ");
 			    		moment.locale('es');
 			    		nums2=nums[0].split(" ");
+
 			    		var day = moment(nums2[1]+"/"+nums[1]+"/"+nums[2],"DD/MMM/YYYY");
 			    		if (tt.indexOf("Intervención")>-1) {
+			    			intercomp.push({ desc:cleanText(tt) , date: day.toString() , link:link });
 			    			if (inter[day.toString()]) {inter[day.toString()]+=1;}
 			    			else{inter[day.toString()]=1}
 			    		}
 			    	});
-			    	next(null,inter);
+			    	tot.debate=inter;
+			    	tot.completo=intercomp;
+			    	next(null,tot);
 			    }
 			});
 			/////////////
@@ -810,7 +744,8 @@ function processSen(subject,app,done){
     ],function(err, results){
     	senador=results[0];
     	senador.asistencia=results[1];
-    	senador.debate=results[2];
+    	senador.debate=results[2].debate;
+    	senador.debatelist=results[2].completo;
     	done(senador);
 	});
 

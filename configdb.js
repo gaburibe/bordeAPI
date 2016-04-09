@@ -18,7 +18,14 @@ var Waterline=require("waterline")
     },
     connections:
     {
-
+      remotec: {
+        adapter: 'mongo',
+        host: '104.239.249.32', // defaults to `localhost` if omitted
+        port: 27017, // defaults to 27017 if omitted
+        user: 'borde', // or omit if not relevant
+        password: '1234', // or omit if not relevant
+        database: 'bordeFed' // or omit if not relevant
+      }
       // mysql: {
       //       adapter   : 'mysql',
       //       host      : 'localhost',
@@ -49,13 +56,13 @@ var Waterline=require("waterline")
       //   user      : 'root',
       //       password  : '1234'
       // }
-      local: {
-        adapter: 'mongo',
-        port: 27017, // defaults to 27017 if omitted
-        database: 'bordeFed' // or omit if not relevant
-        // user      : 'root',
-        //     password  : '1234'
-      }
+      // local: {
+      //   adapter: 'mongo',
+      //   port: 27017, // defaults to 27017 if omitted
+      //   database: 'bordeFed2' // or omit if not relevant
+      //   // user      : 'root',
+      //   //     password  : '1234'
+      // }
 
     },
 
@@ -66,7 +73,7 @@ var Waterline=require("waterline")
 
   };
 
-var conn_default = "local";
+var conn_default = "remotec";
 
 // Event
 var diputados = Waterline.Collection.extend({
