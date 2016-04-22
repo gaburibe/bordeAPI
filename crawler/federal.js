@@ -8,11 +8,51 @@ var async=require('async');
 var Iconv  = require('iconv').Iconv;
 var async=require('async');
 var moment=require('moment');
+var fs = require('fs');
 moment.locale('es');
+
+function nextdip(){
+
+}
 
 module.exports = module.export =
 {
-	
+	diputadosSIL: function( req, res, app, cb ){
+		var obj;
+		fs.readFile('crawler/dips.json', 'utf8', function (err, data) {
+		  if (err) throw err;
+		  obj = JSON.parse(data);
+		  test=[ ["9219077","9219077"] ];
+
+		  	async.forEachSeries(test, function(sub, callback) { 
+		       subject=sub[1];
+		       console.log(subject);
+		       processDipSil(subject,"diputados",app,function( senador ){
+					callback();
+				});
+		    }, function(err) {
+		        res.end("DONE")
+		    });
+		});
+	},
+	senadoresSIL: function( req, res, app, cb ){
+		var obj;
+		fs.readFile('crawler/sens.json', 'utf8', function (err, data) {
+		  if (err) throw err;
+		  obj = JSON.parse(data);
+		  test=[ ["9219077","9219077"] ];
+
+		  	async.forEachSeries(obj, function(sub, callback) { 
+		       subject=sub[1];
+		       console.log(subject);
+		       processDipSil(subject,"senadores",app,function( senador ){
+					callback();
+				});
+		    }, function(err) {
+		        res.end("DONE")
+		    });
+		});
+	},
 	diputados: function ( req, res, app, cb ){
 		var links=[];
 		var c = new Crawler({
@@ -29,12 +69,12 @@ module.exports = module.export =
 
 		        		console.log("http://sitl.diputados.gob.mx/LXIII_leg/"+link);
 		        		links.push("http://sitl.diputados.gob.mx/LXIII_leg/"+link);
-		        		//processDip("http://sitl.diputados.gob.mx/LXIII_leg/"+link,res,app);
+		        		processDip("http://sitl.diputados.gob.mx/LXIII_leg/curricula.php?dipt=260",res,app)//"http://sitl.diputados.gob.mx/LXIII_leg/"+link,res,app);
 		        		num+=1;
 		        	}
 		        	console.log(num,link);
 		        });
-		        processDip(links,app);
+		        //processDip(links,app);
 		    }
 		});
 		c.queue('http://sitl.diputados.gob.mx/LXIII_leg/listado_diputados_buscador.php');
@@ -339,7 +379,7 @@ module.exports = module.export =
 		    maxConnections : 100,
 		    forceUTF8:true,		    
 		    callback : function (error, result, $) {
-		    	app.models[ "diputados" ].find({ camara:"senadores" , ordenDeGobierno: "Federal" }).exec(function (err, dips){
+		    	app.models[ "diputados" ].find({ ordenDeGobierno: "Federal" }).exec(function (err, dips){
 					  if (err) {
 					    console.log(err);
 					  }
@@ -454,6 +494,68 @@ module.exports = module.export =
 		// 	//c.queue('http://sil.gobernacion.gob.mx/Busquedas/Basica/ResultadosBusquedaBasica.php?SID=1b7fe5faf68c057808cda1c17af5b9b9&Origen=BB&Serial=11a35874e082f61deecbb96264b823ae&Reg=2562&Paginas=100&pagina='+i); //10
 		// 	c.queue('http://sil.gobernacion.gob.mx/Busquedas/Basica/ResultadosBusquedaBasica.php?SID=7609bda38979160484afd0b3c25615d3&Origen=BB&Serial=ca51c60679cb46634640e754138238fe&Reg=8455&Paginas=100&pagina='+i); //4
 		// }
+	},
+	dipAsist: function( req, res, app, cb ){
+		var dips={};
+		var c = new Crawler({
+		    maxConnections : 100,
+		    forceUTF8:true,
+		    callback : function (error, result, $) {
+		    	
+		    	$('a').each(function(index, elem) {
+		    		link=$(elem).attr("href");
+		    		console.log(link);
+		    		d.queue("http://gaceta.diputados.gob.mx"+link);
+		    	});
+		    	// tot.debate=inter;
+		    	// tot.completo=intercomp;
+		    	//next(null,tot);
+		    }
+		});
+		var d = new Crawler({
+		    maxConnections : 100,
+		    forceUTF8:true,
+		    callback : function (error, result, $) {
+		    	uri=result.uri;
+		    	parts=uri.split("/L");
+		    	patss=parts[1].split(".");
+		    	console.log(patss[0][0]+patss[0][1]+"/"+patss[0][2]+patss[0][3]+"/20"+patss[0][4]+patss[0][5])
+		    	fechaasist=patss[0][0]+patss[0][1]+"/"+patss[0][2]+patss[0][3]+"/20"+patss[0][4]+patss[0][5];
+		    	$('tr').each(function(index, elem) {
+		    		
+
+		    		asis=$(elem).text();
+		    		nametm=$(elem).find("td").eq(0).text();
+		    		inasisttm=$(elem).find("td").eq(1).text();
+		    		nametm=nametm.split(" ");
+		    		namecomp="";
+		    		for (var i = 1; i < nametm.length; i++) {
+		    			namecomp=namecomp+" "+nametm[i];
+		    		};
+		    		namecomp=namecomp.trim();
+		    		if (inasisttm.indexOf("INASISTENCIA")>-1) {
+		    			console.log("-->>","-"+namecomp+"-",inasisttm);
+		    		}
+		    		
+		    	});
+		    	// tot.debate=inter;
+		    	// tot.completo=intercomp;
+		    	//next(null,tot);
+		    }
+		});
+		c.queue("http://gaceta.diputados.gob.mx/gp62_Asis3.html");
+		app.models[ "diputados" ].find({ camara:"diputados" , ordenDeGobierno: "Federal" }).exec(function (err, dips){
+			if (err) {
+			    console.log(err);
+			}
+			else{
+				console.log('Number dips:',"diputados","Federal", dips.length);
+			  	c.queue("http://gaceta.diputados.gob.mx/gp62_Asis3.html");
+			}
+			for (var i = 0; i < dips.length; i++) {
+				console.log('[ '+dips[i].id+' ,"'+dips[i].name+'"]')
+			};
+		});
 	}
 }
 function addinis(ini,dips,app,done){
@@ -751,6 +853,166 @@ function processSen(subject,app,done){
 
 	
 }
+function processDipSil(subject,camara,app,done){
+	console.log("processing:",subject);
+	 async.series([
+        function(next){
+            var c = new Crawler({
+            	forceUTF8:true,
+			    maxConnections : 100,
+			    callback : function (error, result, $) {
+			    	uri=result.uri;
+			    	id=uri.split("Referencia=")[1];
+			    	dip={};
+			    	dip.uriid=id;
+			    	$('table[border="1"]').eq(0).find(".tdcriterio").each(function(index, elem) {
+			    		cat=$(elem).text();
+			    		valelem=$(elem).parent("tr").find(".tddatosazul");
+			    		val=$(elem).parent("tr").find(".tddatosazul").text();
+			    		
+			    		if (cat.indexOf("Nombre")>-1) { // name
+			    			val=$(elem).parent("tr").find(".tddatosazul").find("b").text();
+			    			vals=val.split(", ");
+			    			dip["name"]=vals[1]+" "+vals[0];
+			    		}
+			    		else if (cat.indexOf("Partido")>-1) { // name
+			    			dip["party"]=val;
+			    		}
+			    		else if (cat.indexOf("Correo")>-1) { // name
+			    			dip["mail"]=val;
+			    		}
+			    		else if (cat.indexOf("Zona")>-1) { // name
+			    			val=$(elem).parent("tr").find(".tddatosazul").html();
+			    			vals=val.split("<br>")
+			    			vals2=vals[0].split("Entidad: ")
+			    			dip["estado"]=vals2[1];
+			    		}
+			    		else if (cat.indexOf("Principio de")>-1) { // name
+			    			if (val.indexOf("Relativa")>-1) {
+			    				val="MR";
+			    			}
+			    			dip["eleccion"]=val;
+			    		}
+
+			    		console.log("->>",cat,"->>",val);
+			    	});
+					num=0;
+					tit="";
+					dip["comisiones"]=[]
+					$("img").each(function(index,elem) {
+						src=$(elem).attr("src");
+						
+					});
+					$('table[border="1"]').eq(1).find("tr").each(function(index, elem) {
+						if(num==0){
+							tit=$(elem).find("td").eq(0).text();
+							//console.log(tit); //Del año
+						}
+						else{
+							if(tit=="Comisión"){
+								all=$(elem).text();
+					    		//console.log("-_-"+ all)
+
+					    		puesto=cleanText( $(elem).find("td").eq(1).text() );
+					    		comision=cleanText( $(elem).find("td").eq(0).text() );
+					    		comision=comision.replace(" (C. Diputados)","");
+					    		dip["comisiones"].push({puestocom:puesto , namecom: comision });
+					    		console.log("comision:",puesto,"-",comision)
+							}
+						}
+						num+=1;
+						
+			    	});
+			    	num=0;
+			    	tit="";
+			    	dip["trayectoria"]=[];
+			    	already={};
+			    	$('table[width="100%"]').each(function(index, elem) {
+
+			    			rub="";
+			    			if (index==0) {rub="administrativa";}
+			    			if (index==1) {rub="política";}
+			    			if (index==2) {rub="académica";}
+			    			if (index==3) {rub="empresarial";}
+			    			if (index==3) {rub="otros";}
+			    			
+							tit=$(elem).find("td").eq(0).text();
+							trabajo="";
+							if(tit=="Del año"){
+
+								$(elem).find("tr").each(function(index2, elem2) {
+									console.log("YEI",rub, index,$(elem2).text());
+									starts=$(elem2).find(".tddatosazul").eq(0).text();
+									ends=$(elem2).find(".tddatosazul").eq(1).text();
+									trabajo=$(elem2).find(".tddatosazul").eq(2).text();
+									//console.log("trayectoria",starts,ends,trabajo);
+									if(trabajo.length>2 && !already[trabajo]){ 
+										already[trabajo]=1;
+										dip["trayectoria"].push({ de:starts, a:ends , descripcion: trabajo }); 
+									}
+									
+								});
+
+
+							}
+						num+=1;
+			    	});
+			    	dip["imageurl"]=$('img[alt="Foto del Legislador"]').attr("src");
+			    	dip["linksil"]=uri;
+					dip["ordenDeGobierno"]="Federal";
+					dip["camara"]=camara;//"diputados";
+			    	app.models[ "diputados" ].find({name:dip.name}).exec(function (err, usersNamedFinn){
+						  if ("err",err) {
+
+						    console.log(err);
+						  }
+						  if (usersNamedFinn.length==0) {
+						  	console.log("nonexistent",dip.name)
+						  	next(null,dip);
+						  	// app.models[ "diputados" ].create(dip).exec(function createCB(err, created){
+					    //         console.log("errcreating:",err);
+					    //         console.log("body",created);
+					    //         //console.log(dip);
+			    		// 		next(null,dip);
+					    //     });
+						  }
+						  else{
+
+						  	app.models[ "diputados" ].update({name:dip.name},{trayectoria:dip.trayectoria}).exec(function afterwards(err, updated){
+							  console.log("existed",dip.name);
+						  		next(null,dip);
+							  console.log('Updated user to have name ' + updated[0].name , updated[0].trayectoria);
+							});
+						  	
+						  }
+					  	
+					});
+
+			    	
+			    }
+			});
+			////////////
+			c.queue("http://sil.gobernacion.gob.mx/Librerias/pp_PerfilLegislador.php?SID=&Referencia="+subject);
+			
+        },
+        function(next){
+        	next(null,"dip");
+        },
+        function(next){   //DEBATE
+        	next(null,"dip2");
+
+        }
+    ],function(err, results){
+    	console.log("done processing:",subject);
+    	// senador=results[0];
+    	// senador.asistencia=results[1];
+    	// senador.debate=results[2].debate;
+    	// senador.debatelist=results[2].completo;
+    	done(results);
+	});
+
+	
+}
 function cleanText(txt){
     txt=txt.trim();
     txt=txt.replace("Sen. ", "");
@@ -758,10 +1020,24 @@ function cleanText(txt){
     txt=txt.replace("\r", "");
     txt=txt.replace("\n", "");
     txt.replace("\t", "");
+    txt.replace(" (C. Diputados)", "");
     txt=txt.trim();
     return txt;
 }
 function removeTags(txt){
     var rex = /(<([^>]+)>)/ig;
     return txt.replace(rex , "");
+}
+function processAsistDip(list){
+
+}
+function lettermatch(str1,str2){
+	m=0;
+	for (var i = 0; i < str1.length; i++) {
+		if( str1[i]==str2[i] ){
+			m+=1;
+		}
+		
+	}
+	return m/str1.length;
 }

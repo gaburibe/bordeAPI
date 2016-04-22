@@ -1,0 +1,24 @@
+var script = document.createElement('script');
+script.src = 'http://code.jquery.com/jquery-1.11.0.min.js';
+script.type = 'text/javascript';
+document.getElementsByTagName('head')[0].appendChild(script);
+
+m=$('table[width="600px"]').find("a").attr("href");
+
+console.log(m);
+num=0;
+$('a').each(function(index, datos) {
+	link=$(datos).html();
+	click=$(datos).attr("onclick");
+	
+	if (click && click.indexOf("pp_PerfilLegislador")>-1) {
+		c="";
+		c2=click.split('"');
+		c3=c2[1].split("Referencia=")
+		suav=c3[c3.length-1];
+		//console.log(link,click,datos.attributes);
+		//console.log(suav)
+		console.log('"'+link+'","'+suav+'"');
+		num+=1;
+	}
+});

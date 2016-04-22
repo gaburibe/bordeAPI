@@ -8,6 +8,7 @@ var pagina = require('./apps/pagina');
 var borde_fed = require('./borde/score');
 
 var crawl_fed = require('./crawler/federal');
+var crawl_u = require('./crawler/utilities');
 
 var port="8080";
 app.use(bodyParser.json());
@@ -95,16 +96,22 @@ app.delete('/trabajo/', function(req, res, next) {
 //CRAWLERS
 
 app.get('/crawl/federal/dip',function(req, res, next) {
-  crawl_fed.diputados(req, res, app, next);
+  crawl_fed.diputadosSIL(req, res, app, next);//diputados(req, res, app, next);
 })
 app.get('/crawl/federal/sen',function(req, res, next) {
   crawl_fed.senadores2(req, res, app, next);
+})
+app.get('/crawl/federal/sent',function(req, res, next) {
+  crawl_fed.senadoresSIL(req, res, app, next);//diputados(req, res, app, next);
 })
 app.get('/crawl/federal/iniciativas',function(req, res, next) {
   crawl_fed.iniciativas(req, res, app, next);
 })
 app.get('/crawl/federal/pas',function(req, res, next) {
   crawl_fed.pas(req, res, app, next);
+})
+app.get('/crawl/federal/dipasist',function(req, res, next) {
+  crawl_fed.dipAsist(req, res, app, next);
 })
 
 //Análisis
@@ -124,6 +131,12 @@ app.get('/borde/federal/historico/senchafa',function(req, res, next) {
 // app.get('/crawl/federal/pas',function(req, res, next) {
 //   crawl_fed.pas(req, res, app, next);
 // })
+app.get('/crawl/utilities',function(req, res, next) {
+  crawl_u.news(req, res, app, next);
+})
+app.get('/crawl/utilities/bss',function(req, res, next) {
+  crawl_u.bss(req, res, app, next);
+})
 
 
 

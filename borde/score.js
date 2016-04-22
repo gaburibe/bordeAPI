@@ -36,6 +36,11 @@ module.exports = module.export =
 		} , function(err, results){
 			date=moment();
 			bordescore2(results.inis , results.pas ,results.list, date , app , function( bs ){
+				recordBS(dips,app);
+				console.log("RANKS-O",bs);
+				// app.models[ "diputados" ].update(dips[key].id , {bs:dips[key].bs}).exec(function createCB(err, created){
+		  //           console.log("udated",created[0].name,created[0].bs);
+		  //       });
 				res.end( JSON.stringify( bs ) );
 			})
 			
@@ -182,7 +187,8 @@ module.exports = module.export =
 		console.log("miau ;)");
 		
 		
-	}
+	},
+
 }
 function bordescore2(inis,pas,list, date, app, end){
 	dips={};
@@ -197,8 +203,9 @@ function bordescore2(inis,pas,list, date, app, end){
 		bs={};
 		trabajo=[];
 		name=list[i].name.toLowerCase();
+		party=list[i].party;
 		iddip=list[i].id;
-		dips[iddip]={ debate:0, inis:0 , pas:0 , asistencia:0 , bs:0 };
+		dips[iddip]={ medios:0 , debate:0, inis:0 , pas:0 , asistencia:0 , bs:0 };
 		
 		console.log(name);
 		console.log("-------------");
@@ -210,6 +217,12 @@ function bordescore2(inis,pas,list, date, app, end){
 				dips[iddip].inis+=1;
 			}
 		}
+		if (list[i].newslist) {
+			for (var j = 0; j < list[i].newslist.length; j++) {
+					dips[iddip].medios+=1;
+			}
+		}
+		
 		
 		for (var dia_asist in list[i].asistencia) {
 	        
@@ -232,6 +245,7 @@ function bordescore2(inis,pas,list, date, app, end){
 		bs.bs1=( dips[iddip].inis*3 + dips[iddip].pas ) 
 			+ dips[iddip].asistencia/70 + dips[iddip].debate/7;
 		if (bs.bs1 > maxr) {maxr=bs.bs1;}
+		// console.log(iddip,"bs1",bs.bs1)
 		
 		bs.bs2=0;
 		bs.bs3=0;
@@ -257,12 +271,15 @@ function bordescore2(inis,pas,list, date, app, end){
 		if ( ranks.indexOf(bs.bs)<0 ) {
 			ranks.push(bs.bs);
 		}
+		dips[iddip].name=name;
+		dips[iddip].party=party;
 		dips[iddip].bs=bs;
 		//console.log(dips[iddip])
 		// app.models[ "diputados" ].update(iddip, {bs:dips[iddip].bs}).exec(function createCB(err, created){
   //           //console.log("udated",created);
   //       });
 	}
+
 	ranks.sort(function(a, b){return b-a});
 	ranks_pa.sort(function(a, b){return b-a});
 	ranks_debate.sort(function(a, b){return b-a});
@@ -274,44 +291,39 @@ function bordescore2(inis,pas,list, date, app, end){
 	for (var key in dips) {
 		for (var i = 0; i < ranks.length; i++) {
 			if(dips[key].bs.bs==ranks[i]){
-				console.log("mm",dips[key].bs.bs , ranks[i]);
 				dips[key].bs.r=i;
 			}
 		}
 		for (var i = 0; i < ranks_pa.length; i++) {
 			if(dips[key].bs.pas==ranks_pa[i]){
-				console.log("mm pas",dips[key].bs.pas , ranks_pa[i]);
 				dips[key].bs.r_pa=i;
 			}
 		}
 		for (var i = 0; i < ranks_debate.length; i++) {
 			if(dips[key].bs.debate==ranks_debate[i]){
-				console.log("mm debate",dips[key].bs.debate , ranks_debate[i]);
 				dips[key].bs.r_debate=i;
 			}
 		}
 		for (var i = 0; i < ranks_ini.length; i++) {
 			if(dips[key].bs.inis==ranks_ini[i]){
-				console.log("mm inis",dips[key].bs.inis , ranks_ini[i]);
 				dips[key].bs.r_ini=i;
 			}
 		}
 		for (var i = 0; i < ranks_asistencia.length; i++) {
 			if(dips[key].bs.asistencia==ranks_asistencia[i]){
-				console.log("mm asist",dips[key].bs.asistencia , ranks_asistencia[i]);
 				dips[key].bs.r_asistencia=i;
 			}
 		}
-		app.models[ "diputados" ].update(dips[key].id , {bs:dips[key].bs}).exec(function createCB(err, created){
-            //console.log("udated",created);
-        });
+		// app.models[ "diputados" ].update(dips[key].id , {bs:dips[key].bs}).exec(function createCB(err, created){
+  //           console.log("udated",created[0].name,created[0].bs);
+  //       });
 	}
 	
 	console.log("superdate",date.toString());
 	//console.log("rdips",dips)
 	//rdips.sort(compare);
 	//console.log("rdips",rdips)
-	end(ranks);
+	end(dips);
 }
 function bordeScore(inis,pas,list, date, app, end){
 	dips={};
@@ -408,6 +420,7 @@ function bordeScore(inis,pas,list, date, app, end){
 		if ( ranks.indexOf(bs.bs)<0 ) {
 			ranks.push(bs.bs);
 		}
+		dips[iddip].name=name;
 		dips[iddip].bs=bs;
 		//console.log(dips[iddip])
 		// app.models[ "diputados" ].update(iddip, {bs:dips[iddip].bs}).exec(function createCB(err, created){
@@ -462,6 +475,7 @@ function bordeScore(inis,pas,list, date, app, end){
 	//console.log("rdips",dips)
 	//rdips.sort(compare);
 	//console.log("rdips",rdips)
+	
 	end(ranks);
 }
 function compare(a,b) {
@@ -471,6 +485,57 @@ function compare(a,b) {
     return 1;
   else 
     return 0;
+}
+function recordBS(dips,app){
+	date=moment();
+	score={};
+	bsr=[];
+	bsini=[];
+	bsdeb=[];
+	bspa=[];
+
+	dat2=date.toString();
+	for (id in dips) {
+		//BS
+		if (bsr[dips[id].bs.r]) {
+			bsr[dips[id].bs.r].name.push(dips[id].name); //+=","+dips[id].name;
+		}
+		else{
+			bsr[dips[id].bs.r]={y:dips[id].bs.bs1,name:[ {name:dips[id].name,party:dips[id].party,id:id} ]}
+		}
+		//inis
+		if (bsini[dips[id].bs.r_ini]) {
+			bsini[dips[id].bs.r_ini].name.push({name:dips[id].name,party:dips[id].party,id:id});//+=","+dips[id].name;
+		}
+		else{
+			bsini[dips[id].bs.r_ini]={y:dips[id].bs.inis,name:[ {name:dips[id].name,party:dips[id].party,id:id} ]}
+		}
+		//pas
+		if (bspa[dips[id].bs.r_pa]) {
+			bspa[dips[id].bs.r_pa].name.push({name:dips[id].name,party:dips[id].party,id:id});
+		}
+		else{
+			bspa[dips[id].bs.r_pa]={y:dips[id].bs.pas,name:[ {name:dips[id].name,party:dips[id].party,id:id} ]}
+		}
+		if (bsdeb[dips[id].bs.r_debate]) {
+			bsdeb[dips[id].bs.r_debate].name.push({name:dips[id].name,party:dips[id].party,id:id});//+=","+dips[id].name;
+		}
+		else{
+			bsdeb[dips[id].bs.r_debate]={y:dips[id].bs.debate,name: [ {name:dips[id].name,party:dips[id].party,id:id} ]}
+		}
+		
+
+		//bs1.name="name";
+		//subject=dips[id];
+
+	}
+	score.bs=bsr;
+	score.ini=bsini;
+	score.pa=bspa;
+	score.deb=bsdeb;
+	app.models[ "bs" ].create( {camara:"senado",date:dat2,document:score} ).exec(function createCB(err, created){
+            console.log("BS created",err,created);
+        });
 }
 function makelist(camara , ordenDeGobierno , app , done){
 	app.models[ "diputados" ].find({ camara:camara , ordenDeGobierno: ordenDeGobierno }).populate("work").exec(function (err, inis){

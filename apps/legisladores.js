@@ -197,6 +197,7 @@ module.exports = module.export =
     },
 	get: function apiGET ( req, res, app, cb )
 	{
+
         console.log("get",req.body.where);
 		var q = app.models[ "diputados" ].find().where( req.body.where );//);
 		if ( ! _.isEmpty( req.body.populate ) )
@@ -215,7 +216,20 @@ module.exports = module.export =
 
 		q.exec( function (err, theobject){
              console.log(err,theobject);
-			 res.end( JSON.stringify( theobject ) );
+             if (req.body.bs) {
+                app.models[ "bs" ].find().exec(function (err, bss){
+                      if (err) {
+                        console.log("err", err);
+                      }
+                      else{
+                        res.end( JSON.stringify( {dip:theobject,bs:bss} ) );
+                      }
+                });
+             }
+             else{
+                res.end( JSON.stringify( {dip:theobject} ) );
+             }
+			 
 		} );
 	},
 	put: function apiPUT ( req, res, app, cb )

@@ -59,7 +59,7 @@ var Waterline=require("waterline")
       // local: {
       //   adapter: 'mongo',
       //   port: 27017, // defaults to 27017 if omitted
-      //   database: 'bordeFed2' // or omit if not relevant
+      //   database: 'bordeFedex' // or omit if not relevant
       //   // user      : 'root',
       //   //     password  : '1234'
       // }
@@ -239,6 +239,20 @@ var news = Waterline.Collection.extend({
   }
 });
 orm.loadCollection(news);
+var bs = Waterline.Collection.extend({
+  identity: 'bs',
+  connection: conn_default,
+  tableName: "bs",
+  attributes: {   
+    date: {
+      type: 'string',
+    },
+    document: {
+      type: 'json',
+    }
+  }
+});
+orm.loadCollection(bs);
 module.exports = function ( app )
 {
 

@@ -7,8 +7,8 @@
 6 silly lifecycle bordeapi@1.0.0~prestart: no script for prestart, continuing
 7 info lifecycle bordeapi@1.0.0~start: bordeapi@1.0.0
 8 verbose lifecycle bordeapi@1.0.0~start: unsafe-perm in lifecycle true
-9 verbose lifecycle bordeapi@1.0.0~start: PATH: /usr/local/lib/node_modules/npm/bin/node-gyp-bin:/Volumes/Archivos/gabrieluribe/Sites/bordeAPI/node_modules/.bin:/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/bin:/opt/ImageMagick/bin
-10 verbose lifecycle bordeapi@1.0.0~start: CWD: /Volumes/Archivos/gabrieluribe/Sites/bordeAPI
+9 verbose lifecycle bordeapi@1.0.0~start: PATH: /usr/local/lib/node_modules/npm/bin/node-gyp-bin:/Volumes/Archivos 1/gabrieluribe/Sites/bordeAPI/node_modules/.bin:/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/bin:/opt/ImageMagick/bin
+10 verbose lifecycle bordeapi@1.0.0~start: CWD: /Volumes/Archivos 1/gabrieluribe/Sites/bordeAPI
 11 silly lifecycle bordeapi@1.0.0~start: Args: [ '-c', 'node index.js' ]
 12 silly lifecycle bordeapi@1.0.0~start: Returned: code: 1  signal: null
 13 info lifecycle bordeapi@1.0.0~start: Failed to exec start script
@@ -23,7 +23,7 @@
 14 verbose stack     at maybeClose (internal/child_process.js:821:16)
 14 verbose stack     at Process.ChildProcess._handle.onexit (internal/child_process.js:211:5)
 15 verbose pkgid bordeapi@1.0.0
-16 verbose cwd /Volumes/Archivos/gabrieluribe/Sites/bordeAPI
+16 verbose cwd /Volumes/Archivos 1/gabrieluribe/Sites/bordeAPI
 17 error Darwin 15.2.0
 18 error argv "/usr/local/bin/node" "/usr/local/bin/npm" "start"
 19 error node v5.4.0
