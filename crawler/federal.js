@@ -24,7 +24,7 @@ module.exports = module.export =
 		  obj = JSON.parse(data);
 		  test=[ ["9219077","9219077"] ];
 
-		  	async.forEachSeries(test, function(sub, callback) { 
+		  	async.forEachSeries(obj, function(sub, callback) { 
 		       subject=sub[1];
 		       console.log(subject);
 		       processDipSil(subject,"diputados",app,function( senador ){
@@ -222,7 +222,7 @@ module.exports = module.export =
 				// 	console.log(results);
 				//     // results is now equal to: {one: 1, two: 2}
 				// });
-				for (var i = 0; i < 60; i++){//list.length; i++) {
+				for (var i = 0; i < 50; i++){//list.length; i++) {
 					subject=list[i];
 
 					processSen(subject,app,function( senador ){
@@ -379,13 +379,12 @@ module.exports = module.export =
 		    maxConnections : 100,
 		    forceUTF8:true,		    
 		    callback : function (error, result, $) {
-		    	app.models[ "diputados" ].find({ ordenDeGobierno: "Federal" }).exec(function (err, dips){
+		    	app.models[ "diputados" ].find().exec(function (err, dips){
 					  if (err) {
 					    console.log(err);
 					  }
 					  else{
-					  	console.log('Number dips:',"senadores","Federal", dips.length);
-					  	console.log("uri",result.uri);
+					  	console.log('Number dips:',"todos","Federal", dips.length);
 				    	inis=[];
 				    	console.log("--");
 				    	tablegen=$('table[width="1000px"]');
@@ -420,7 +419,31 @@ module.exports = module.export =
 								        ini.presentacion=test;
 								        break;
 								    case 6:
-								        ini.autor=cleanText(test);
+								    	autores=[];
+								    	$(datos).find('a').each(function(index3,datos3){
+								    		
+								    		autor={};//$(datos3).text();
+								    	    linkau=$(datos3).attr("onclick");
+
+								    		m_linkau2=linkau.split("SID=");
+								    		if (m_linkau2[1]) {
+								    			m_referencia=m_linkau2[1].split('&');
+								    			autor.id=m_referencia[0];
+								    			//autores.push(m_referencia[0]);
+								    		}
+
+								    		linkau2=linkau.split("Referencia=");
+								    		if (linkau2[1]) {
+								    			referencia=linkau2[1].split('"');
+								    			autor.ref=referencia[0];
+								    			//autores.push(referencia[0]);
+								    		}
+								    		autor.text=$(datos3).text();
+								    		autores.push(autor);
+								    		
+								    	});
+								        ini.autor=autores;
+								        console.log("autores-ref",ini.autores);
 								        break;
 								    case 7:
 								        ini.partido=test;
@@ -460,7 +483,7 @@ module.exports = module.export =
 								});
 				        		//console.log(index,"-->",ini)
 				        		inis.push(ini);
-				        		addinis(ini,dips,app,function(err){
+				        		addinis2(ini,dips,app,function(err){
 				        			console.log("dd->"+err);
 				        		});
 				        		
@@ -476,24 +499,20 @@ module.exports = module.export =
 		    }
 		});
 		////Inis
-		// for (var i = 1; i <= 16; i++) {  //xiii
-		// 	c.queue('http://sil.gobernacion.gob.mx/Busquedas/Basica/ResultadosBusquedaBasica.php?SID=23579d8bd1d3c412c37a08e95bf07b09&Origen=BB&Serial=e95932f521c18293d9b9363384b3a282&Reg=1563&Paginas=100&pagina='+i); //4
+		// for (var i = 1; i <= 19; i++) {  //xiii
+		// 	c.queue('http://sil.gobernacion.gob.mx/Busquedas/Basica/ResultadosBusquedaBasica.php?SID=b90f77b475fb188d8bb062df129b6de5&Origen=BB&Serial=2c535e6d5a9f19fb81dbb7304b7129e1&Reg=1826&Paginas=100&pagina='+i); //4
 		// }
 		// for (var i = 1; i <= 54; i++) {  //xii
-		// 	c.queue('http://sil.gobernacion.gob.mx/Busquedas/Basica/ResultadosBusquedaBasica.php?SID=2cd6c607634434ec8f53775e98529189&Origen=BB&Serial=85b6573d515be9f60877151efdca256a&Reg=5357&Paginas=100&pagina='+i); //4
+		// 	c.queue('http://sil.gobernacion.gob.mx/Busquedas/Basica/ResultadosBusquedaBasica.php?SID=94de5b7d3e222c6bf00cbf727763fdbe&Origen=BB&Serial=338ef28943fb6bcf7398e9fb5c62b9d4&Reg=5357&Paginas=100&pagina='+i); //4
 		// }
 		////pas
-		for (var i = 1; i <= 27; i++) {  //xiii
-			c.queue('http://sil.gobernacion.gob.mx/Busquedas/Basica/ResultadosBusquedaBasica.php?SID=f16d7a4f419ea06a57abbe34470d1c22&Origen=BB&Serial=471c770316700be0e8a9af86bab1ff94&Reg=2611&Paginas=100&pagina='+i); //4
-		}
-		for (var i = 1; i <= 85; i++) {  //xii
-			c.queue('http://sil.gobernacion.gob.mx/Busquedas/Basica/ResultadosBusquedaBasica.php?SID=71acdf5a255ccf13a8b41fefdafd42e0&Origen=BB&Serial=9d116a115c9fd2b4b3c81db52dcfc651&Reg=8456&Paginas=100&pagina='+i); //4
-		}
-		// for (var i = 1; i <= 85; i++) { 
-
-		// 	//c.queue('http://sil.gobernacion.gob.mx/Busquedas/Basica/ResultadosBusquedaBasica.php?SID=1b7fe5faf68c057808cda1c17af5b9b9&Origen=BB&Serial=11a35874e082f61deecbb96264b823ae&Reg=2562&Paginas=100&pagina='+i); //10
-		// 	c.queue('http://sil.gobernacion.gob.mx/Busquedas/Basica/ResultadosBusquedaBasica.php?SID=7609bda38979160484afd0b3c25615d3&Origen=BB&Serial=ca51c60679cb46634640e754138238fe&Reg=8455&Paginas=100&pagina='+i); //4
+		// for (var i = 1; i <= 29; i++) {  //xiii
+		// 	c.queue('http://sil.gobernacion.gob.mx/Busquedas/Basica/ResultadosBusquedaBasica.php?SID=ac2b004135240d43edbea60eba0c972f&Origen=BB&Serial=10b9cb8db5230274392e1ea2e4062446&Reg=2878&Paginas=100&pagina='+i); //4
 		// }
+		for (var i = 1; i <= 85; i++) {  //xii
+			c.queue('http://sil.gobernacion.gob.mx/Busquedas/Basica/ResultadosBusquedaBasica.php?SID=5b18ddd97640b81817b1b06354b959d5&Origen=BB&Serial=09a350c15b4b6e5e90837dfb29b6bd07&Reg=8456&Paginas=100&pagina='+i); //4
+		}
+		
 	},
 	dipAsist: function( req, res, app, cb ){
 		var dips={};
@@ -558,6 +577,35 @@ module.exports = module.export =
 		});
 	}
 }
+function addinis2(ini,dips,app,done){
+	app.models[ "trabajo" ].create(ini).exec(function createCB(err, created){
+	  		if(!err && created.autor){
+	  			for (var i = 0; i < dips.length; i++) {
+		  			name=dips[i].name.toLowerCase();
+        			autor=created.autores;
+					if (autores.length >=1 ) {
+						
+						// app.models[ "diputados" ].find({id:dips[i].id}).exec(function(e,r){
+						//   r[0].work.add(created.id);
+						//   r[0].save(function(err,res){
+						//     console.log("link saved",res);
+						//   });
+						// });
+
+						console.log("linkin",name,autor);
+					}
+        		}
+	            console.log("errcreating:",err);
+	            console.log("body",created);
+	            done(null);
+	  		}
+	  		else{
+	  			done(null);
+	  		}
+	  		
+            
+        });
+}
 function addinis(ini,dips,app,done){
 	if(ini.type=="i" || ini.type=="pa"){
 		app.models[ "trabajo" ].find({resumen:ini.resumen}).exec(function (err, usersNamedFinn){
@@ -569,7 +617,7 @@ function addinis(ini,dips,app,done){
 		  		if(!err && created.autor){
 		  			for (var i = 0; i < dips.length; i++) {
 			  			name=dips[i].name.toLowerCase();
-	        			autor=created.autor.toLowerCase();
+	        			autor=created.autor.toString().toLowerCase();
 						if (autor.indexOf(name)>-1 && name.length>2) {
 							
 							app.models[ "diputados" ].find({id:dips[i].id}).exec(function(e,r){
@@ -855,6 +903,7 @@ function processSen(subject,app,done){
 }
 function processDipSil(subject,camara,app,done){
 	console.log("processing:",subject);
+	var without={};
 	 async.series([
         function(next){
             var c = new Crawler({
@@ -862,6 +911,7 @@ function processDipSil(subject,camara,app,done){
 			    maxConnections : 100,
 			    callback : function (error, result, $) {
 			    	uri=result.uri;
+
 			    	id=uri.split("Referencia=")[1];
 			    	dip={};
 			    	dip.uriid=id;
@@ -891,6 +941,12 @@ function processDipSil(subject,camara,app,done){
 			    			if (val.indexOf("Relativa")>-1) {
 			    				val="MR";
 			    			}
+			    			else if (val.indexOf("Minor")>-1) {
+			    				val="PM";
+			    			}
+			    			else if (val.indexOf("Proporcional")>-1) {
+			    				val="RP";
+			    			}
 			    			dip["eleccion"]=val;
 			    		}
 
@@ -906,7 +962,6 @@ function processDipSil(subject,camara,app,done){
 					$('table[border="1"]').eq(1).find("tr").each(function(index, elem) {
 						if(num==0){
 							tit=$(elem).find("td").eq(0).text();
-							//console.log(tit); //Del año
 						}
 						else{
 							if(tit=="Comisión"){
@@ -917,7 +972,6 @@ function processDipSil(subject,camara,app,done){
 					    		comision=cleanText( $(elem).find("td").eq(0).text() );
 					    		comision=comision.replace(" (C. Diputados)","");
 					    		dip["comisiones"].push({puestocom:puesto , namecom: comision });
-					    		console.log("comision:",puesto,"-",comision)
 							}
 						}
 						num+=1;
@@ -941,11 +995,10 @@ function processDipSil(subject,camara,app,done){
 							if(tit=="Del año"){
 
 								$(elem).find("tr").each(function(index2, elem2) {
-									console.log("YEI",rub, index,$(elem2).text());
+								
 									starts=$(elem2).find(".tddatosazul").eq(0).text();
 									ends=$(elem2).find(".tddatosazul").eq(1).text();
 									trabajo=$(elem2).find(".tddatosazul").eq(2).text();
-									//console.log("trayectoria",starts,ends,trabajo);
 									if(trabajo.length>2 && !already[trabajo]){ 
 										already[trabajo]=1;
 										dip["trayectoria"].push({ de:starts, a:ends , descripcion: trabajo }); 
@@ -960,28 +1013,33 @@ function processDipSil(subject,camara,app,done){
 			    	dip["imageurl"]=$('img[alt="Foto del Legislador"]').attr("src");
 			    	dip["linksil"]=uri;
 					dip["ordenDeGobierno"]="Federal";
-					dip["camara"]=camara;//"diputados";
+					dip["camara"]=camara;
+					dip["silid"]=id;
 			    	app.models[ "diputados" ].find({name:dip.name}).exec(function (err, usersNamedFinn){
 						  if ("err",err) {
 
 						    console.log(err);
 						  }
 						  if (usersNamedFinn.length==0) {
-						  	console.log("nonexistent",dip.name)
-						  	next(null,dip);
-						  	// app.models[ "diputados" ].create(dip).exec(function createCB(err, created){
-					    //         console.log("errcreating:",err);
-					    //         console.log("body",created);
-					    //         //console.log(dip);
-			    		// 		next(null,dip);
-					    //     });
+						  	console.log("nonexistent",dip.name,"<-")
+						  	//next(null,dip);
+						  	app.models[ "diputados" ].create(dip).exec(function createCB(err, created){
+					            console.log("errcreating:",err);
+					            console.log("created",created.name);
+					            //console.log(dip);
+			    				next(null,dip);
+					        });
 						  }
 						  else{
-
-						  	app.models[ "diputados" ].update({name:dip.name},{trayectoria:dip.trayectoria}).exec(function afterwards(err, updated){
-							  console.log("existed",dip.name);
+						  	console.log("tr:"+dip.trayectoria.length);
+						  	if(dip.trayectoria.length==0){
+						  		without[dip.uriid]=">"+dip.name+"<";
+						  		console.log("wo:",without)
+						  	}
+						  	app.models[ "diputados" ].update({name:dip.name},{trayectoria:dip.trayectoria , silid:dip.uriid}).exec(function afterwards(err, updated){
+							  	console.log("existed",dip.name);
 						  		next(null,dip);
-							  console.log('Updated user to have name ' + updated[0].name , updated[0].trayectoria);
+							  	console.log('Updated user to have name ' + updated[0].name,updated[0].silid);
 							});
 						  	
 						  }

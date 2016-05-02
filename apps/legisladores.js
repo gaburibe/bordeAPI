@@ -198,7 +198,10 @@ module.exports = module.export =
 	get: function apiGET ( req, res, app, cb )
 	{
 
-        console.log("get",req.body.where);
+        console.log("geto",req.body.where);
+        if (!req.body.where) {
+            req.body.where={};
+        }
 		var q = app.models[ "diputados" ].find().where( req.body.where );//);
 		if ( ! _.isEmpty( req.body.populate ) )
 		{

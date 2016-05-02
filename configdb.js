@@ -22,9 +22,9 @@ var Waterline=require("waterline")
         adapter: 'mongo',
         host: '104.239.249.32', // defaults to `localhost` if omitted
         port: 27017, // defaults to 27017 if omitted
-        user: 'borde', // or omit if not relevant
+        user: 'bordeA', // or omit if not relevant
         password: '1234', // or omit if not relevant
-        database: 'bordeFed' // or omit if not relevant
+        database: 'bordeFedA' // or omit if not relevant
       }
       // mysql: {
       //       adapter   : 'mysql',

@@ -95,8 +95,11 @@ app.delete('/trabajo/', function(req, res, next) {
 
 //CRAWLERS
 
-app.get('/crawl/federal/dip',function(req, res, next) {
+app.get('/crawl/federal/dip/sil',function(req, res, next) {
   crawl_fed.diputadosSIL(req, res, app, next);//diputados(req, res, app, next);
+})
+app.get('/crawl/federal/sen/sil',function(req, res, next) {
+  crawl_fed.senadoresSIL(req, res, app, next);
 })
 app.get('/crawl/federal/sen',function(req, res, next) {
   crawl_fed.senadores2(req, res, app, next);
@@ -136,6 +139,21 @@ app.get('/crawl/utilities',function(req, res, next) {
 })
 app.get('/crawl/utilities/bss',function(req, res, next) {
   crawl_u.bss(req, res, app, next);
+})
+app.get('/utilities/enlistCategories',function(req, res, next) {
+  crawl_u.enlistCateg(req, res, app, next);
+})
+app.get('/utilities/checkok',function(req, res, next) {
+  crawl_u.checkok(req, res, app, next);
+})
+app.get('/utilities/linkwork',function(req, res, next) {
+  crawl_u.linkwork(req, res, app, next);
+})
+app.get('/utilities/addips',function(req, res, next) {
+  crawl_u.addips(req, res, app, next);
+})
+app.get('/utilities/getbs',function(req, res, next) {
+  crawl_u.getbs(req, res, app, next);
 })
 
 

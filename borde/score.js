@@ -34,10 +34,12 @@ module.exports = module.export =
 				})
 			}
 		} , function(err, results){
+			console.log("subjects",results.list.length);
+			console.log("work",results.inis.length,results.pas.length);
 			date=moment();
-			bordescore2(results.inis , results.pas ,results.list, date , app , function( bs ){
-				recordBS(dips,app);
-				console.log("RANKS-O",bs);
+			bordescore3(results.inis , results.pas ,results.list, date , app , function( bs ){
+				// recordBS(dips,app);
+				console.log("RANKS-O",bs.length);
 				// app.models[ "diputados" ].update(dips[key].id , {bs:dips[key].bs}).exec(function createCB(err, created){
 		  //           console.log("udated",created[0].name,created[0].bs);
 		  //       });
@@ -73,7 +75,9 @@ module.exports = module.export =
 			}
 		} , function(err, results){
 			date=moment();
-			bordescore2(results.inis , results.pas ,results.list, date , app , function( bs ){
+			console.log("subjects",results.list.length);
+			console.log("work",results.inis.length,results.pas.length);
+			bordescore3(results.inis , results.pas ,results.list, date , app , function( bs ){
 				res.end( JSON.stringify( bs ) );
 			})
 			
@@ -190,6 +194,154 @@ module.exports = module.export =
 	},
 
 }
+function bordescore3(inis,pas,list, date, app, end){
+	dips={};
+	bs={};
+	ranks=[];
+	ranks_ini=[];
+	ranks_pa=[];
+	ranks_debate=[];
+	ranks_asistencia=[];
+	maxr=0;
+
+	async.forEachSeries(list, function(legis, callback) { 
+        bs={};
+        ini_a=1.8;
+        ini_d=1.5;
+        ini_p=1;
+        ini_r=.5;
+		trabajo=[];
+		name=legis.name.toLowerCase();
+		party=legis.party;
+		iddip=legis.id;
+		dips[iddip]={ medios:0 , debate:0, inis:0 , pas:0 , asistencia:0 , bs:0 };
+		
+		console.log(name);
+		console.log("-------------");
+		for (var j = 0; j < legis.work.length; j++) {
+			type=legis.work[j].type;
+			estado=legis.work[j].estado;
+			if (type=="pa") {
+				console.log("+1 pa")
+				dips[iddip].pas+=1;
+			}
+			if (type=="i") {
+				
+				if ( estado.indexOf("CAMARA REVISORA") > -1 ) {
+					console.log("aprobada");
+					dips[iddip].inis+=ini_a;
+				}
+				else if( estado.indexOf("PUBLICADO EN D.O.F") > -1 ){
+					console.log("aprobada")
+					dips[iddip].inis+=ini_a;
+				}
+				else if( estado.indexOf("DEVUELTO A CAMARA DE ORIGEN") > -1 ){
+					console.log("aprobada")
+					dips[iddip].inis+=ini_a;
+				}
+				else if( estado.indexOf("TURNADO AL EJECUTIVO") > -1 ){
+					console.log("aprobada")
+					dips[iddip].inis+=ini_a;
+				}
+				else if( estado.indexOf("DEVUELTO A COMISION(ES) DE CAMARA DE ORIGEN") > -1 ){
+					console.log("aprobada")
+					dips[iddip].inis+=ini_a;
+				}
+				else if( estado.indexOf("DICTAMEN NEGATIVO APROBADO EN CAMARA DE ORIGEN") > -1 ){
+					console.log("rechazada")
+					dips[iddip].inis+=ini_r;
+				}
+				else if( estado.indexOf("DESECHADO") > -1 ){
+					console.log("rechazada")
+					dips[iddip].inis+=ini_r;
+				}
+				else if( estado.indexOf("DE PRIMERA LECTURA EN CAMARA DE ORIGEN") > -1 ){
+					console.log("Dictaminada");
+					dips[iddip].inis+=ini_d;
+				}
+				else if( estado.indexOf("RETIRADA") > -1 ){
+					console.log("retirada");
+				}
+				else{
+					console.log("presentada");
+					dips[iddip].inis+=ini_p;
+				}
+				
+				console.log("+1 i")
+				
+			}
+		}
+		if (legis.newslist) {
+			for (var j = 0; j < legis.newslist.length; j++) {
+					dips[iddip].medios+=1;
+			}
+		}
+		
+		
+		for (var dia_asist in legis.asistencia) {
+	        
+	        if ( legis.asistencia[dia_asist].indexOf("ASISTENCIA")>-1 && name.length>2) {
+				dips[iddip].asistencia+=1;
+			}
+	    }
+	    for (var dia_deb in legis.debate) {
+	    	presdate=moment(dia_deb);
+	    	if ( date.diff(presdate, 'days') > 0 ) {
+
+	    	}
+			dips[iddip].debate+=legis.debate[dia_deb];
+	    }
+	//     ranks_ini=[];
+	// ranks_pa=[];
+	// ranks_debate=[];
+	// ranks_asistencia=[];
+		
+		bs.bs1=( dips[iddip].inis*4 + dips[iddip].pas + dips[iddip].debate/7 ) 
+			+ dips[iddip].asistencia/70;
+		if (bs.bs1 > maxr) {maxr=bs.bs1;}
+		// console.log(iddip,"bs1",bs.bs1)
+		
+		bs.bs2=0;
+		bs.bs3=0;
+		bs.bs=Math.ceil( bs.bs1+bs.bs2+bs.bs3 );
+
+		bs.asistencia=dips[iddip].asistencia/70;
+		if ( ranks_asistencia.indexOf(bs.asistencia)<0 ) {
+			ranks_asistencia.push(bs.asistencia);
+		}
+		bs.inis=dips[iddip].inis*3;
+		if ( ranks_ini.indexOf(bs.inis)<0 ) {
+			ranks_ini.push(bs.inis);
+		}
+		bs.pas=dips[iddip].pas;
+		if ( ranks_pa.indexOf(bs.pas)<0 ) {
+			ranks_pa.push(bs.pas);
+		}
+		bs.debate=dips[iddip].debate/7;
+		if ( ranks_debate.indexOf(bs.debate)<0 ) {
+			ranks_debate.push(bs.debate);
+		}
+
+		if ( ranks.indexOf(bs.bs)<0 ) {
+			ranks.push(bs.bs);
+		}
+		dips[iddip].name=name;
+		dips[iddip].party=party;
+		dips[iddip].bs=bs;
+		
+
+
+		app.models[ "diputados" ].update(iddip, {bs:dips[iddip].bs}).exec(function createCB(err, created){
+            console.log("updated",created[0].name,created[0].bs);
+            callback();
+        });
+      
+    }, function(err) {
+        console.log("DONE")
+        end(dips);
+    });
+	
+}
 function bordescore2(inis,pas,list, date, app, end){
 	dips={};
 	bs={};
@@ -199,6 +351,7 @@ function bordescore2(inis,pas,list, date, app, end){
 	ranks_debate=[];
 	ranks_asistencia=[];
 	maxr=0;
+
 	for (var i = 0; i < list.length; i++) {
 		bs={};
 		trabajo=[];
@@ -210,10 +363,12 @@ function bordescore2(inis,pas,list, date, app, end){
 		console.log(name);
 		console.log("-------------");
 		for (var j = 0; j < list[i].work.length; j++) {
-			if (type="pa") {
+			if (type=="pa") {
+				console.log("+1 pa")
 				dips[iddip].pas+=1;
 			}
-			if (type="i") {
+			if (type=="i") {
+				console.log("+1 i")
 				dips[iddip].inis+=1;
 			}
 		}
@@ -275,9 +430,9 @@ function bordescore2(inis,pas,list, date, app, end){
 		dips[iddip].party=party;
 		dips[iddip].bs=bs;
 		//console.log(dips[iddip])
-		// app.models[ "diputados" ].update(iddip, {bs:dips[iddip].bs}).exec(function createCB(err, created){
-  //           //console.log("udated",created);
-  //       });
+		app.models[ "diputados" ].update(iddip, {bs:dips[iddip].bs}).exec(function createCB(err, created){
+            console.log("updated",created[0].name,created[0].bs);
+        });
 	}
 
 	ranks.sort(function(a, b){return b-a});
@@ -314,9 +469,9 @@ function bordescore2(inis,pas,list, date, app, end){
 				dips[key].bs.r_asistencia=i;
 			}
 		}
-		// app.models[ "diputados" ].update(dips[key].id , {bs:dips[key].bs}).exec(function createCB(err, created){
-  //           console.log("udated",created[0].name,created[0].bs);
-  //       });
+		app.models[ "diputados" ].update(dips[key].id , {bs:dips[key].bs}).exec(function createCB(err, created){
+            console.log("updated",created[0].name,created[0].bs);
+        });
 	}
 	
 	console.log("superdate",date.toString());
