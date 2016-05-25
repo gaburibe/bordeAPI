@@ -125,10 +125,10 @@ app.get('/borde/federal/historico/sen',function(req, res, next) {
 app.get('/borde/federal/historico/dip',function(req, res, next) {
   borde_fed.dipH(req, res, app, next);
 })
-app.get('/borde/federal/historico/dipchafa',function(req, res, next) {
-  borde_fed.dipchafa(req, res, app, next);
+app.get('/borde/record/dip',function(req, res, next) {
+  borde_fed.record(req, res, app, next);
 })
-app.get('/borde/federal/historico/senchafa',function(req, res, next) {
+app.get('/borde/record/sen',function(req, res, next) {
   borde_fed.senchafa(req, res, app, next);
 })
 // app.get('/crawl/federal/pas',function(req, res, next) {
@@ -154,6 +154,12 @@ app.get('/utilities/addips',function(req, res, next) {
 })
 app.get('/utilities/getbs',function(req, res, next) {
   crawl_u.getbs(req, res, app, next);
+})
+app.get('/utilities/enlistBS',function(req, res, next) {
+  crawl_u.enlistBS(req, res, app, next);
+})
+app.get('/utilities/addsocial',function(req, res, next) {
+  crawl_u.addSocial(req, res, app, next);
 })
 
 

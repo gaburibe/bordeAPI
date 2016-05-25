@@ -139,6 +139,19 @@ module.exports = module.export =
 
 		
 	},
+	enlistBS: function ( req, res, app, cb ){
+		app.models[ "diputados" ].find({camara:"diputados"}).exec(function createCB(err, trs){
+			bsl={};
+			for (var i = 0; i < trs.length; i++) {
+				bsl[ trs[i].bs.rb ]={name:trs[i].name,id:trs[i].id,imageurl:trs[i].imageurl};
+			}
+			for (var i = 1; i < 11; i++) {
+				console.log(i,bsl[i]);
+			};
+
+		});
+		
+	},
 	bss: function ( req, res, app, cb ){
 		for(iddip in bscore){
 			bscore[iddip].id=iddip;
@@ -358,6 +371,15 @@ module.exports = module.export =
 					
 
 		});
+	},
+	addSocial: function ( req, res, app, cb ){
+		partialMatcher( "jimena escribe con pedro" , {"112":{name:"Jimena"},"112":{name:"pablo"}} );
+	}
+}
+function partialMatcher(match,list){
+	for(name in list){
+		subject=list[name];
+		console.log(112,subject);
 	}
 }
 

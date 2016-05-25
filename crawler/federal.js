@@ -921,12 +921,22 @@ function processDipSil(subject,camara,app,done){
 			    		val=$(elem).parent("tr").find(".tddatosazul").text();
 			    		
 			    		if (cat.indexOf("Nombre")>-1) { // name
-			    			val=$(elem).parent("tr").find(".tddatosazul").find("b").text();
+			    			val=$(elem).parent("tr").find(".tddatosazul").text();//.find("b").text();
 			    			vals=val.split(", ");
+			    			
 			    			dip["name"]=vals[1]+" "+vals[0];
 			    		}
 			    		else if (cat.indexOf("Partido")>-1) { // name
 			    			dip["party"]=val;
+			    		}
+			    		else if (cat.indexOf("Nacimiento")>-1) { // name
+			    			ages=val.split("Fecha: ");
+			    			if (ages[1]) {
+			    				ages2=ages[1].split('Entidad');
+			    				ages3=ages2[0];
+			    			}
+			    			dip["age"]=ages3;
+			    			console.log("nacimiento",ages3);
 			    		}
 			    		else if (cat.indexOf("Correo")>-1) { // name
 			    			dip["mail"]=val;
@@ -1015,7 +1025,7 @@ function processDipSil(subject,camara,app,done){
 					dip["ordenDeGobierno"]="Federal";
 					dip["camara"]=camara;
 					dip["silid"]=id;
-			    	app.models[ "diputados" ].find({name:dip.name}).exec(function (err, usersNamedFinn){
+			    	app.models[ "diputados" ].find({silid:dip.silid}).exec(function (err, usersNamedFinn){
 						  if ("err",err) {
 
 						    console.log(err);
@@ -1023,12 +1033,12 @@ function processDipSil(subject,camara,app,done){
 						  if (usersNamedFinn.length==0) {
 						  	console.log("nonexistent",dip.name,"<-")
 						  	//next(null,dip);
-						  	app.models[ "diputados" ].create(dip).exec(function createCB(err, created){
-					            console.log("errcreating:",err);
-					            console.log("created",created.name);
-					            //console.log(dip);
-			    				next(null,dip);
-					        });
+						  	// app.models[ "diputados" ].create(dip).exec(function createCB(err, created){
+					    //         console.log("errcreating:",err);
+					    //         console.log("created",created.name);
+					    //         //console.log(dip);
+			    		// 		next(null,dip);
+					    //     });
 						  }
 						  else{
 						  	console.log("tr:"+dip.trayectoria.length);
@@ -1036,7 +1046,7 @@ function processDipSil(subject,camara,app,done){
 						  		without[dip.uriid]=">"+dip.name+"<";
 						  		console.log("wo:",without)
 						  	}
-						  	app.models[ "diputados" ].update({name:dip.name},{trayectoria:dip.trayectoria , silid:dip.uriid}).exec(function afterwards(err, updated){
+						  	app.models[ "diputados" ].update({silid:dip.silid},{age:dip.age, mail:dip.mail}).exec(function afterwards(err, updated){//{trayectoria:dip.trayectoria , silid:dip.uriid}).exec(function afterwards(err, updated){
 							  	console.log("existed",dip.name);
 						  		next(null,dip);
 							  	console.log('Updated user to have name ' + updated[0].name,updated[0].silid);

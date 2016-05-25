@@ -220,7 +220,7 @@ module.exports = module.export =
 		q.exec( function (err, theobject){
              console.log(err,theobject);
              if (req.body.bs) {
-                app.models[ "bs" ].find().exec(function (err, bss){
+                app.models[ "bs" ].find({ where: {}, limit: 1, sort: 'date DESC' }).exec(function (err, bss){
                       if (err) {
                         console.log("err", err);
                       }
