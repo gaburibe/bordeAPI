@@ -1,10 +1,7 @@
 
 /*
 
-    General purpose restful API.
-
-    @body - all methods are posts.
-    @body.model - required model name, returns statusCode 500 if model is not found.
+   Endpoint para añadir trabajo legislativo de forma manual
 
 */
 
@@ -15,16 +12,14 @@ var _ = require('lodash')
     , async = require('async')
     , allowed = [ '_id',"ids", 'name' ]; // witch paths are allowed in the get request.
 
-if (process.env.NODE_ENV=='development') console.log("News has loaded");
+if (process.env.NODE_ENV=='development') console.log("Trabajo has loaded");
 
-// All purpose array check for docs, And response, It calls the done that is attached to this via bind.
 
 
 module.exports = module.export =
 {
     get: function  ( req, res, app, cb )
     {
-        //res.end( JSON.stringify( {miau:"dens"} ) );
         var q = app.models[ "trabajo" ].find().where( req.body.where );//);
         if ( ! _.isEmpty( req.body.populate ) )
         {
@@ -45,7 +40,6 @@ module.exports = module.export =
     },
     post: function  ( req, res, app, cb )
     {
-        //res.end( JSON.stringify( {miau:"dens"} ) );
         app.models[ "trabajo" ].create(req.body).exec(function createCB(err, created){
             console.log("err:"+err);
             res.end( JSON.stringify( created ) );

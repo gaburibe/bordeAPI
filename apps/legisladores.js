@@ -1,10 +1,7 @@
 
 /*
 
-	General purpose restful API.
-
-	@body - all methods are posts.
-	@body.model - required model name, returns statusCode 500 if model is not found.
+	Principal endpoint para acceder y modíficar información sobre legisladores
 
 */
 
@@ -55,63 +52,6 @@ var autoDone =  function autoDone ( err, results )
 
 module.exports = module.export =
 {
-    fill: function fill (req, res, app, cb){
-            var sujetos=  [{infolejURL:"http://www.congresojal.gob.mx/diputados/perfil?id_dip=307",name:"Felipe de Jesús Romo Cuéllar"},
-                        {infolejURL:"http://www.congresojal.gob.mx/diputados/perfil?id_dip=288",name:"Irma de Anda Licea"},
-                        {infolejURL:"http://www.congresojal.gob.mx/diputados/perfil?id_dip=286",name:"Isaías Cortés Berumen"},
-                        {infolejURL:"http://www.congresojal.gob.mx/diputados/perfil?id_dip=306",name:"María del Pilar Pérez Chavira"},
-                        {infolejURL:"http://www.congresojal.gob.mx/diputados/perfil?id_dip=304",name:"Miguel Ángel Monraz Ibarra"},
-                        {infolejURL:"http://www.congresojal.gob.mx/diputados/perfil?id_dip=301",name:"Antonio López Orózco"},
-                        {infolejURL:"http://www.congresojal.gob.mx/diputados/perfil?id_dip=295",name:"Cecilia González Gómez"},
-                        {infolejURL:"http://www.congresojal.gob.mx/diputados/perfil?id_dip=291",name:"Claudia Delgadillo González"},
-                        {infolejURL:"http://www.congresojal.gob.mx/diputados/perfil?id_dip=279",name:"Edgar Oswaldo Bañales Orozco"},
-                        {infolejURL:"http://www.congresojal.gob.mx/diputados/perfil?id_dip=284",name:"Hugo Contreras Zepeda"},
-                        {infolejURL:"http://www.congresojal.gob.mx/diputados/perfil?id_dip=311",name:"Hugo René Ruíz Esparza Hermosillo"},
-                        {infolejURL:"http://www.congresojal.gob.mx/diputados/perfil?id_dip=277",name:"Jorge Arana Arana"},
-                        {infolejURL:"http://www.congresojal.gob.mx/diputados/perfil?id_dip=283",name:"Juana Ceballos Guzmán"},
-                        {infolejURL:"http://www.congresojal.gob.mx/diputados/perfil?id_dip=305",name:"Liliana Guadalupe Morones Vargas"},
-                        {infolejURL:"http://www.congresojal.gob.mx/diputados/perfil?id_dip=312",name:"María del Refugio Ruíz Moreno"},
-                        {infolejURL:"http://www.congresojal.gob.mx/diputados/perfil?id_dip=285",name:"María del Rocío Corona Nakamura"},
-                        {infolejURL:"http://www.congresojal.gob.mx/diputados/perfil?id_dip=280",name:"Martha Susana Barajas del Toro"},
-                        {infolejURL:"http://www.congresojal.gob.mx/diputados/perfil?id_dip=278",name:"Salvador Arellano Guzmán"},
-                        {infolejURL:"http://www.congresojal.gob.mx/diputados/perfil?id_dip=275",name:"Mónica Almeida López"},
-                        {infolejURL:"http://www.congresojal.gob.mx/diputados/perfil?id_dip=292",name:"Saúl Galindo Plazola"},
-                        {infolejURL:"http://www.congresojal.gob.mx/diputados/perfil?id_dip=289",name:"Enrique Aubry de Castro Palomino"},
-                        {infolejURL:"http://www.congresojal.gob.mx/diputados/perfil?id_dip=308",name:"Erika Lizbeth Ramírez Pérez"},
-                        {infolejURL:"http://www.congresojal.gob.mx/diputados/perfil?id_dip=298",name:"Omar Hernández Hernández"},
-                        {infolejURL:"http://www.congresojal.gob.mx/diputados/perfil?id_dip=303",name:"Adriana Gabriela Medina Ortíz"},
-                        {infolejURL:"http://www.congresojal.gob.mx/diputados/perfil?id_dip=313",name:"Augusto Valencia López"},
-                        {infolejURL:"http://www.congresojal.gob.mx/diputados/perfil?id_dip=315",name:"Fela Patricia Pelayo López"},
-                        {infolejURL:"http://www.congresojal.gob.mx/diputados/perfil?id_dip=297",name:"Héctor Alejandro Hermosillo González"},
-                        {infolejURL:"http://www.congresojal.gob.mx/diputados/perfil?id_dip=310",name:"Hugo Rodríguez Díaz"},
-                        {infolejURL:"http://www.congresojal.gob.mx/diputados/perfil?id_dip=290",name:"Ismael del Toro Castro"},
-                        {infolejURL:"http://www.congresojal.gob.mx/diputados/perfil?id_dip=276",name:"Juan Carlos Anguiano Orozco"},
-                        {infolejURL:"http://www.congresojal.gob.mx/diputados/perfil?id_dip=299",name:"Kehila Abigail Ku Escalante"},
-                        {infolejURL:"http://www.congresojal.gob.mx/diputados/perfil?id_dip=316",name:"María de Lourdes Martínez Pizano"},
-                        {infolejURL:"http://www.congresojal.gob.mx/diputados/perfil?id_dip=309",name:"María del Consuelo Robles Sierra"},
-                        {infolejURL:"http://www.congresojal.gob.mx/diputados/perfil?id_dip=287",name:"María Elena de Anda Gutiérrez"},
-                        {infolejURL:"http://www.congresojal.gob.mx/diputados/perfil?id_dip=282",name:"Mario Hugo Castellanos Ibarra"},
-                        {infolejURL:"http://www.congresojal.gob.mx/diputados/perfil?id_dip=314",name:"Martha Villanueva Nuñez"},
-                        {infolejURL:"http://www.congresojal.gob.mx/diputados/perfil?id_dip=296",name:"Ramón Demetrio Guerrero Martínez"},
-                        {infolejURL:"http://www.congresojal.gob.mx/diputados/perfil?id_dip=293",name:"José García Mora"},
-                        {infolejURL:"http://www.congresojal.gob.mx/diputados/perfil?id_dip=300",name:"José Pedro Kumamoto Aguilar"}];
-        _.each(sujetos, function(sujeto, key) {
-            app.models[ "diputados" ].create(sujeto).exec(function createCB(err, created){
-                console.log("err:"+err);
-                console.log( JSON.stringify( created ) );
-            });
-        });
-
-    },
-    test: function testdb ( req, res, app, cb )
-	{
-        //res.end( JSON.stringify( {miau:"dens"} ) );
-        var q = app.models[ "diputados" ].find();
-        q.exec( function (err, allTheStuff) {
-            console.log("err:"+err);
-            res.end( JSON.stringify( allTheStuff ) );
-        });
-    },
     post: function post ( req, res, app, cb )
 	{
        
@@ -120,12 +60,6 @@ module.exports = module.export =
             console.log("body",req.body);
             res.end( JSON.stringify( created ) );
         });
-        //res.end( JSON.stringify( {miau:"dens"} ) );
-        //var q = app.models[ "diputados" ].find();
-        //q.exec( function (err, allTheStuff) {
-        //    console.log("err:"+err);
-        //    res.end( JSON.stringify( allTheStuff ) );
-        //});
     },
     postnews: function ( req, res, app, cb )
 	{
@@ -136,7 +70,6 @@ module.exports = module.export =
             	_.forEach(found, function (val, key) {
 				 	dip=val;
 				});
-            	//app.models[ "news" ].create(req.body.news).exec(function createCB(errnews, creatednews){
 		            dip.news.add(req.body.idn);
 		            dip.save(function (error) {
 						 console.log("error:"+error);
@@ -148,16 +81,9 @@ module.exports = module.export =
                          }
 					});
 		            
-		        //});
             }
             
         });
-        //res.end( JSON.stringify( {miau:"dens"} ) );
-        //var q = app.models[ "diputados" ].find();
-        //q.exec( function (err, allTheStuff) {
-        //    console.log("err:"+err);
-        //    res.end( JSON.stringify( allTheStuff ) );
-        //});
     },
     postwork: function ( req, res, app, cb )
 	{
@@ -168,9 +94,6 @@ module.exports = module.export =
             	_.forEach(found, function (val, key) {
 				 	dip=val;
 				});
-                //res.end( JSON.stringify( {nn:"t"} ) );
-            	//app.models[ "trabajo" ].create(req.body.idt).exec(function createCB(err, createdwork){
-		   //          console.log("errnews:"+errnews);
 		            dip.work.add(req.body.idt);
 		            dip.save(function (error) {
 						 console.log("error:"+error);
@@ -182,18 +105,9 @@ module.exports = module.export =
                          }
 						 
 					});
-		            // res.end( JSON.stringify( {nn:"t"} ) );
-
-		        //});
             }
             
         });
-        //res.end( JSON.stringify( {miau:"dens"} ) );
-        //var q = app.models[ "diputados" ].find();
-        //q.exec( function (err, allTheStuff) {
-        //    console.log("err:"+err);
-        //    res.end( JSON.stringify( allTheStuff ) );
-        //});
     },
 	get: function apiGET ( req, res, app, cb )
 	{

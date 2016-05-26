@@ -1,10 +1,7 @@
 
 /*
 
-	General purpose restful API.
-
-	@body - all methods are posts.
-	@body.model - required model name, returns statusCode 500 if model is not found.
+	Principal endpoint para acceder y modíficar noticias
 
 */
 
@@ -17,7 +14,6 @@ var _ = require('lodash')
 
 if (process.env.NODE_ENV=='development') console.log("News has loaded");
 
-// All purpose array check for docs, And response, It calls the done that is attached to this via bind.
 
 
 module.exports = module.export =
@@ -25,7 +21,6 @@ module.exports = module.export =
     get: function  ( req, res, app, cb )
 	{
         console.log("whers",req.body.where)
-        //res.end( JSON.stringify( {miau:"dens"} ) );
         var q = app.models[ "news" ].find().where( req.body.where );//);
 		if ( ! _.isEmpty( req.body.populate ) )
 		{
