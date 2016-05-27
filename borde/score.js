@@ -30,27 +30,26 @@ module.exports = module.export =
 			app.models[ "bs" ].create( {camara:"diputados",date:dat2,document:document} ).exec(function createCB(err, created){
 	            console.log("BS created",err);
 	        });
-			// console.log("wosil",wosil,document);
 		});
 	},
 	senH: function ( req, res, app, cb ){
 
 		async.series({
 			inis:function (next){
-				next(null,[]);
+				next(null,[]); // COMENTADO PUESTO QUE SE SACA TODA LA INFIORMACIÓN EN "makelist"
 				// legis=["LXII","LXIII"]
 				// getTrabajo( "i" , "Federal" , "senadores", legis , app ,function (status,inis){
 				// 	next(null,inis);
 				// })
 			},
 			pas:function (next){
-				next(null,[]);
+				next(null,[]);// COMENTADO PUESTO QUE SE SACA TODA LA INFIORMACIÓN EN "makelist"
 				// getTrabajo( "pa" , "Federal" , "senadores", legis , app ,function (status,pas){
 				// 	next(null,pas);
 				// })
 			},
 			list:function (next){
-				date=moment();//("13/05/1986","dd/mm/yyyy");
+				date=moment();
 				makelist( "senadores" , "Federal" , app ,function (status,dips){
 					next(null,dips);
 				})
@@ -79,14 +78,14 @@ module.exports = module.export =
 
 		async.series({
 			inis:function (next){
-				next(null,[]);
+				next(null,[]); // COMENTADO PUESTO QUE SE SACA TODA LA INFIORMACIÓN EN "makelist"
 				// legis=["LXIII"]
 				// getTrabajo( "i" , "Federal" , "diputados", legis , app ,function (status,inis){
 				// 	next(null,inis);
 				// })
 			},
 			pas:function (next){
-				next(null,[]);
+				next(null,[]); // COMENTADO PUESTO QUE SE SACA TODA LA INFIORMACIÓN EN "makelist"
 				// getTrabajo( "pa" , "Federal" , "diputados", legis , app ,function (status,pas){
 				// 	next(null,pas);
 				// })
@@ -116,7 +115,7 @@ module.exports = module.export =
 		
 	},
 }
-function bordescore3(inis,pas,list, date, app, end){
+function bordescore3(inis,pas,list, date, app, end){ //Función principal de cálculo
 	dips={};
 	bs={};
 	ranks=[];
@@ -132,7 +131,7 @@ function bordescore3(inis,pas,list, date, app, end){
 	agregados.partycount={};
 	maxr=0;
 	camara="-";
-	async.forEachSeries(list, function(legis, callback) { 
+	async.forEachSeries(list, function(legis, callback) {  //ciclo sobre todos los legisladores
         bs={};
         stats={};
         stats.ip=0;
@@ -146,23 +145,24 @@ function bordescore3(inis,pas,list, date, app, end){
 
 		party=legis.party;
 
-		if (agregados.partycount[party]) { agregados.partycount[party]+=1; }
+		if (agregados.partycount[party]) { agregados.partycount[party]+=1; } //prepara arrays para agregados en iniciaivas
 		else{ agregados.partycount[party]=1; }
 
 		iddip=legis.id;
 		dips[iddip]={ medios:0 , debate:0, inis:0 , pas:0 , asistencia:0 , bs:0 };
-		
-		console.log(name);
-		console.log("-------------");
+
 		for (var j = 0; j < legis.work.length; j++) {
 			type=legis.work[j].type;
 			camara=legis.camara;
 			estado=legis.work[j].estado;
 			if (type=="pa") {
-				console.log("+1 pa")
 				dips[iddip].pas+=1;
 			}
-			if (type=="i") {
+			if (type=="i") { //Se calculan todos losagregados aquí
+				//i_a_c iniciativas aprobadas
+				//i_p_c iniciativas presentadas
+				//i_a_p iniciativas aprobadas por partido
+				//i_p_p iniciativas presentadas por partido
 				stats.ip+=1;
 				agregados.i_p_c+=1;
 				if (agregados.i_p_p[legis.party]) { agregados.i_p_p[legis.party]+=1; }
@@ -170,7 +170,7 @@ function bordescore3(inis,pas,list, date, app, end){
 
 				if ( estado.indexOf("CAMARA REVISORA") > -1 ) {
 					stats.ia+=1;
-					console.log("aprobada");
+					//console.log("aprobada");
 					dips[iddip].inis+=ini_a;
 					agregados.i_a_c+=1;
 					if (agregados.i_a_p[legis.party]) { agregados.i_a_p[legis.party]+=1; }
@@ -178,7 +178,7 @@ function bordescore3(inis,pas,list, date, app, end){
 				}
 				else if( estado.indexOf("PUBLICADO EN D.O.F") > -1 ){
 					stats.ia+=1;
-					console.log("aprobada")
+					//console.log("aprobada")
 					dips[iddip].inis+=ini_a;
 					agregados.i_a_c+=1;
 					if (agregados.i_a_p[legis.party]) { agregados.i_a_p[legis.party]+=1; }
@@ -186,7 +186,7 @@ function bordescore3(inis,pas,list, date, app, end){
 				}
 				else if( estado.indexOf("DEVUELTO A CAMARA DE ORIGEN") > -1 ){
 					stats.ia+=1;
-					console.log("aprobada")
+					//console.log("aprobada")
 					dips[iddip].inis+=ini_a;
 					agregados.i_a_c+=1;
 					if (agregados.i_a_p[legis.party]) { agregados.i_a_p[legis.party]+=1; }
@@ -194,7 +194,7 @@ function bordescore3(inis,pas,list, date, app, end){
 				}
 				else if( estado.indexOf("TURNADO AL EJECUTIVO") > -1 ){
 					stats.ia+=1;
-					console.log("aprobada")
+					//console.log("aprobada")
 					dips[iddip].inis+=ini_a;
 					agregados.i_a_c+=1;
 					if (agregados.i_a_p[legis.party]) { agregados.i_a_p[legis.party]+=1; }
@@ -202,26 +202,26 @@ function bordescore3(inis,pas,list, date, app, end){
 				}
 				else if( estado.indexOf("DEVUELTO A COMISION(ES) DE CAMARA DE ORIGEN") > -1 ){
 					stats.ia+=1;
-					console.log("aprobada")
+					//console.log("aprobada")
 					dips[iddip].inis+=ini_a;
 					agregados.i_a_c+=1;
 					if (agregados.i_a_p[legis.party]) { agregados.i_a_p[legis.party]+=1; }
 					else{ agregados.i_a_p[legis.party]=1; }
 				}
 				else if( estado.indexOf("DICTAMEN NEGATIVO APROBADO EN CAMARA DE ORIGEN") > -1 ){
-					console.log("rechazada")
+					//console.log("rechazada")
 					dips[iddip].inis+=ini_r;
 				}
 				else if( estado.indexOf("DESECHADO") > -1 ){
-					console.log("rechazada")
+					//console.log("rechazada")
 					dips[iddip].inis+=ini_r;
 				}
 				else if( estado.indexOf("DE PRIMERA LECTURA EN CAMARA DE ORIGEN") > -1 ){
-					console.log("Dictaminada");
+					//console.log("Dictaminada");
 					dips[iddip].inis+=ini_d;
 				}
 				else if( estado.indexOf("RETIRADA") > -1 ){
-					stats.ia-=1;
+					stats.ia+=0;
 					console.log("retirada");
 				}
 				else{
@@ -229,7 +229,6 @@ function bordescore3(inis,pas,list, date, app, end){
 					dips[iddip].inis+=ini_p;
 				}
 				
-				console.log("+1 i")
 				
 			}
 		}

@@ -118,10 +118,11 @@ app.get('/crawl/federal/dipasist',function(req, res, next) {
 })
 
 //Análisis
-
+//Calcula borde score senadores
 app.get('/borde/federal/historico/sen',function(req, res, next) {
   borde_fed.senH(req, res, app, next);
 })
+//Calcula borde score senadores
 app.get('/borde/federal/historico/dip',function(req, res, next) {
   borde_fed.dipH(req, res, app, next);
 })
