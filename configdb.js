@@ -8,8 +8,7 @@ var Waterline=require("waterline")
   , config =
   {
 
-    // Setup Adapters
-    // Creates named adapters that have have been required
+    // CATÁLOGO DE ADAPTADORES A DIFERENTES AMBIENTES remotec es la base de borde
     adapters:
     {
       'default': mongoAdapter
@@ -18,14 +17,14 @@ var Waterline=require("waterline")
     },
     connections:
     {
-      remotec: {
-        adapter: 'mongo',
-        host: '104.239.249.32', // defaults to `localhost` if omitted
-        port: 27017, // defaults to 27017 if omitted
-        user: 'bordeA', // or omit if not relevant
-        password: '1234', // or omit if not relevant
-        database: 'bordeFedA' // or omit if not relevant
-      }
+      // remotec: {
+      //   adapter: 'mongo',
+      //   host: '104.239.249.32', // defaults to `localhost` if omitted
+      //   port: 27017, // defaults to 27017 if omitted
+      //   user: 'bordeA', // or omit if not relevant
+      //   password: '1234', // or omit if not relevant
+      //   database: 'bordeFedA' // or omit if not relevant
+      // }
       // mysql: {
       //       adapter   : 'mysql',
       //       host      : 'localhost',
@@ -56,13 +55,13 @@ var Waterline=require("waterline")
       //   user      : 'root',
       //       password  : '1234'
       // }
-      // local: {
-      //   adapter: 'mongo',
-      //   port: 27017, // defaults to 27017 if omitted
-      //   database: 'bordeFedex' // or omit if not relevant
-      //   // user      : 'root',
-      //   //     password  : '1234'
-      // }
+      local: {   
+        adapter: 'mongo',
+        port: 27017, // defaults to 27017 if omitted
+        database: 'bordeFedex' // or omit if not relevant
+        // user      : 'root',
+        //     password  : '1234'
+      }
 
     },
 
@@ -75,7 +74,7 @@ var Waterline=require("waterline")
 
 var conn_default = "remotec";
 
-// Event
+// Diputados contiene a todos los legisladores
 var diputados = Waterline.Collection.extend({
   identity: 'diputados',
   connection: conn_default,
@@ -150,6 +149,8 @@ var diputados = Waterline.Collection.extend({
   }
 });
 orm.loadCollection(diputados);
+
+// Comisiones aun no esta implementado !!!
 var comisiones = Waterline.Collection.extend({
   identity: 'comisiones',
   connection: conn_default,
@@ -172,6 +173,8 @@ var comisiones = Waterline.Collection.extend({
   }
 });
 orm.loadCollection(comisiones);
+
+// Trabajo es cualquier iniciativa o punto de acuerdo
 var trabajo = Waterline.Collection.extend({
   identity: 'trabajo',
   connection: conn_default,
@@ -215,6 +218,8 @@ var trabajo = Waterline.Collection.extend({
   }
 });
 orm.loadCollection(trabajo);
+
+//News aun no esta implementado !!!
 var news = Waterline.Collection.extend({
   identity: 'news',
   connection: conn_default,
@@ -239,6 +244,8 @@ var news = Waterline.Collection.extend({
   }
 });
 orm.loadCollection(news);
+
+// bs contiene toda la información estadística y el score de cada diputado
 var bs = Waterline.Collection.extend({
   identity: 'bs',
   connection: conn_default,

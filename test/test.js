@@ -1,6 +1,14 @@
 var expect  = require("chai").expect;
 var request = require("request");
 var async = require("async");
+
+/*
+
+Funciones para testear en mocha creación de un legislador (Para correr como prueba)
+
+*/
+
+
 describe("API check",function(){
 	url="http://localhost:8080/";
 	it("returns 200",function(done){

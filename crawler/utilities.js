@@ -14,6 +14,15 @@ var bscore={}
 var dipuvar=[];
 var updatelist={};
 orderednews={};
+
+/*
+
+Funciones de apoyo a los otros módulos, generar reportes etc.
+
+
+
+*/
+
 module.exports = module.export =
 {
 	
