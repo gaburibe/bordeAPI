@@ -17,7 +17,8 @@ function nextdip(){
 
 module.exports = module.export =
 {
-	diputadosSIL: function( req, res, app, cb ){
+
+	diputadosSIL: function( req, res, app, cb ){  //completa info de diputados desde el portal http://sil.gobernacion.gob.mx/
 		var obj;
 		fs.readFile('crawler/dips.json', 'utf8', function (err, data) {
 		  if (err) throw err;
@@ -35,7 +36,7 @@ module.exports = module.export =
 		    });
 		});
 	},
-	senadoresSIL: function( req, res, app, cb ){
+	senadoresSIL: function( req, res, app, cb ){  //completa info de senadores desde el portal http://sil.gobernacion.gob.mx/
 		var obj;
 		fs.readFile('crawler/sens.json', 'utf8', function (err, data) {
 		  if (err) throw err;
@@ -53,7 +54,7 @@ module.exports = module.export =
 		    });
 		});
 	},
-	diputados: function ( req, res, app, cb ){
+	diputados: function ( req, res, app, cb ){ //CREA info de diputados desde http://sitl.diputados.gob.mx
 		var links=[];
 		var c = new Crawler({
 		    maxConnections : 100,
@@ -69,7 +70,7 @@ module.exports = module.export =
 
 		        		console.log("http://sitl.diputados.gob.mx/LXIII_leg/"+link);
 		        		links.push("http://sitl.diputados.gob.mx/LXIII_leg/"+link);
-		        		processDip("http://sitl.diputados.gob.mx/LXIII_leg/curricula.php?dipt=260",res,app)//"http://sitl.diputados.gob.mx/LXIII_leg/"+link,res,app);
+		        		processDip("http://sitl.diputados.gob.mx/LXIII_leg/curricula.php?dipt=260",res,app);
 		        		num+=1;
 		        	}
 		        	console.log(num,link);
@@ -80,8 +81,9 @@ module.exports = module.export =
 		c.queue('http://sitl.diputados.gob.mx/LXIII_leg/listado_diputados_buscador.php');
 		//processDip('http://sitl.diputados.gob.mx/LXIII_leg/curricula.php?dipt=260',res);
 	},
-	senadores2: function (req, res, app, cb ){
+	senadores2: function (req, res, app, cb ){ //CREA info de diputados desde http://www.senado.gob.mx/
 		console.log("sen2");
+		//Lista de id's de senado
 		var list=["636"
 				, "543"
 				, "630"
@@ -209,24 +211,13 @@ module.exports = module.export =
 				, "622"
 				, "640"
 				, "559"];
-				// funcs=[];
-				// for (var i = 0; i < list.length; i++) {
-				// 	//list[i]
-				// 	funcs[i]=function(callback){
-				// 	        processSen(list[i],app,callback);
-				// 	    }
-
-				// };
-				// async.series(funcs,
-				// function(err, results) {
-				// 	console.log(results);
-				//     // results is now equal to: {one: 1, two: 2}
-				// });
-				for (var i = 0; i < 50; i++){//list.length; i++) {
+				/*
+					el contador va hasta cincuenta para no saturar la página de senadores
+				*/
+				for (var i = 0; i < 50; i++){//list.length; i++) { 
 					subject=list[i];
 
 					processSen(subject,app,function( senador ){
-						//console.log( "RESULTADOS >>" , senador );
 						app.models[ "diputados" ].find({name:senador.name}).exec(function (err, usersNamedFinn){
 							  if ("err",err) {
 							    console.log(err);
@@ -235,12 +226,12 @@ module.exports = module.export =
 							  	app.models[ "diputados" ].create(senador).exec(function createCB(err, created){
 						            console.log("errcreating:",err);
 						            console.log("body",created);
-						            //res.end( JSON.stringify( [ 1 , created] )  );
+						            res.end( JSON.stringify( [ 1 , created] )  );
 						        });
 							  }
 							  else{
 							  	console.log("existed",senador.name);
-							  	//res.end( JSON.stringify( [0,"existed"] ) );
+							  	res.end( JSON.stringify( [0,"existed"] ) );
 							  }
 						  	
 						});
@@ -249,9 +240,9 @@ module.exports = module.export =
 				};
 				
 	},
-	senadores: function ( req, res, app, cb ){
+	senadores: function ( req, res, app, cb ){ // CREA senadores desde página de orden alfabético en http://www.senado.gob.mx/
 		listlinks=[];
-		alf=["A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","X","Y","Z"] //25
+		alf=["A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","X","Y","Z"] 
 		var c = new Crawler({
 		    maxConnections : 100,
 		    forceUTF8:true,		    
@@ -275,104 +266,7 @@ module.exports = module.export =
 			c.queue('http://www.senado.gob.mx/index.php?ver=int&mn=4&sm=1&str='+alf[i]);
 		};
 	},
-	iniciativas: function ( req, res, app, cb ){
-		console.log("iniciativas")
-		var c = new Crawler({
-		    maxConnections : 100,
-		    forceUTF8:true,		    
-		    callback : function (error, result, $) {
-
-		    	console.log("uri",result.uri);
-		    	inis=[];
-		    	console.log("--");
-		    	tablegen=$('table[width="1000px"]');
-		        num=0;
-		        dipobject={};
-		        tablegen.find('tr').each(function(index, datos) {
-		        	console.log("-------->");
-		        	ini={};
-		        	tds=$(datos).find('td');
-
-		        	$(datos).find('td').each(function(index2,datos2){
-		        	 	test8859=$(datos2).text();
-						var test = test8859;//decodeURIComponent(unescape(test8859));
-		        	 	switch(index2) {
-						    case 1:
-						        if (test=="Iniciativa") {ini.type="i"}
-						        break;
-						    case 2:
-						        ini.resumen=test;
-						        break;
-						    case 3:
-						        ini.subtype=test;
-						        break;
-						    case 4:
-						        ini.origen=test;
-						        if (test.indexOf("Diputados") > -1) {ini.camara="diputados";}
-						        else if (test.indexOf("Senadores") > -1) {ini.camara="senadores";}
-						        break;
-						    case 5:
-						        ini.presentacion=test;
-						        break;
-						    case 6:
-						        ini.autor=cleanText(test);
-						        break;
-						    case 7:
-						        ini.partido=test;
-						        break;
-						    case 8:
-						        ini.legislatura=test.trim(); //LXIII
-
-						        break;
-						    case 9:
-						        ini.turnado=test;
-						        break;
-						    case 10:
-						        ini.estado=test;
-						        break;
-						    case 11:
-						        ini.tema=test;
-						        break;
-						}
-
-		        	 	//console.log(index2+"->"+test);
-		        	})
-						ini.ordenDeGobierno="Federal";
-						app.models[ "trabajo" ].find({resumen:ini.resumen}).exec(function (err, usersNamedFinn){
-						  if ("err",err) {
-						    console.log(err);
-						  }
-						  if (ini.legislatura && ini.legislatura.length() > 2) {
-						  	app.models[ "trabajo" ].create(ini).exec(function createCB(err, created){
-					            console.log("errcreating:",err);
-					            console.log("body",created);
-					        });
-						  }
-						  else{
-						  	console.log("vacío",ini.resumen);
-						  }
-						  
-						});
-		        		//console.log(index,"-->",ini)
-		        		inis.push(ini);
-		        		addinis(ini,[],app,function(err){
-		        			console.log("dd->"+err);
-		        		});
-		        		
-					
-		        });
-				console.log(inis);
-				//addinis(inis,app);
-		    }
-		});
-		for (var i = 1; i <= 54; i++) { //son 108
-			
-			c.queue('http://sil.gobernacion.gob.mx/Busquedas/Basica/ResultadosBusquedaBasica.php?SID=794b7fb8c30189fc1ebd537bf0340577&Origen=BB&Serial=2e4f02f769de50ea3f2af91be9353619&Reg=5357&Paginas=100&pagina='+i); //108
-			//c.queue('http://sil.gobernacion.gob.mx/Busquedas/Basica/ResultadosBusquedaBasica.php?SID=89491a500e9f8eca9b84db1b0f9de8a2&Serial=b44c1a966e8125f0d6e878d291773ac2&Reg=1543&Origen=BB&Paginas='+i); //31
-		}
-
-	},
-	pas: function ( req, res, app, cb ){
+	pas: function ( req, res, app, cb ){ // Adquiere trabajo legislativo completo
 		console.log("puntos de acuerdo")
 		console.log("P A's")
 		var c = new Crawler({
@@ -397,12 +291,15 @@ module.exports = module.export =
 
 				        	$(datos).find('td').each(function(index2,datos2){
 				        	 	test8859=$(datos2).text();
-								var test = test8859;//decodeURIComponent(unescape(test8859));
-				        	 	switch(index2) {
+				        	 	/*
+									Hay qie arreglar codificación aquí !!!
+				        	 	*/
+
+								var test = test8859;//decodeURIComponent(unescape(test8859)); 
+				        	 	switch(index2) { // Cada índice corresponde a un tag td
 								    case 1:
 								        ini.type="pa";
 								        if (test=="Iniciativa") {ini.type="i"}
-								        // ini.type="pa"
 								        break;
 								    case 2:
 								        ini.resumen=test;
@@ -463,7 +360,6 @@ module.exports = module.export =
 								        break;
 								}
 
-				        	 	//console.log(index2+"->"+test);
 				        	})
 								ini.ordenDeGobierno="Federal";
 								app.models[ "trabajo" ].find({resumen:ini.resumen}).exec(function (err, usersNamedFinn){
@@ -481,7 +377,6 @@ module.exports = module.export =
 								  }
 								  
 								});
-				        		//console.log(index,"-->",ini)
 				        		inis.push(ini);
 				        		addinis2(ini,dips,app,function(err){
 				        			console.log("dd->"+err);
@@ -495,10 +390,12 @@ module.exports = module.export =
 				});
 
 		    	
-				//addinis(inis,app);
 		    }
 		});
-		////Inis
+
+		////// Estos links cambian diario así que hay que administralrlos de forma manual !!!
+
+		//Inis
 		// for (var i = 1; i <= 19; i++) {  //xiii
 		// 	c.queue('http://sil.gobernacion.gob.mx/Busquedas/Basica/ResultadosBusquedaBasica.php?SID=b90f77b475fb188d8bb062df129b6de5&Origen=BB&Serial=2c535e6d5a9f19fb81dbb7304b7129e1&Reg=1826&Paginas=100&pagina='+i); //4
 		// }
@@ -526,9 +423,6 @@ module.exports = module.export =
 		    		console.log(link);
 		    		d.queue("http://gaceta.diputados.gob.mx"+link);
 		    	});
-		    	// tot.debate=inter;
-		    	// tot.completo=intercomp;
-		    	//next(null,tot);
 		    }
 		});
 		var d = new Crawler({
@@ -557,9 +451,7 @@ module.exports = module.export =
 		    		}
 		    		
 		    	});
-		    	// tot.debate=inter;
-		    	// tot.completo=intercomp;
-		    	//next(null,tot);
+		    	
 		    }
 		});
 		c.queue("http://gaceta.diputados.gob.mx/gp62_Asis3.html");
@@ -577,7 +469,10 @@ module.exports = module.export =
 		});
 	}
 }
-function addinis2(ini,dips,app,done){
+
+//FUNCIONES DE APOYO PARA EL MÓDULO
+
+function addinis2(ini,dips,app,done){ // SIL
 	app.models[ "trabajo" ].create(ini).exec(function createCB(err, created){
 	  		if(!err && created.autor){
 	  			for (var i = 0; i < dips.length; i++) {
@@ -606,56 +501,7 @@ function addinis2(ini,dips,app,done){
             
         });
 }
-function addinis(ini,dips,app,done){
-	if(ini.type=="i" || ini.type=="pa"){
-		app.models[ "trabajo" ].find({resumen:ini.resumen}).exec(function (err, usersNamedFinn){
-		  if ("err",err) {
-		    console.log(err);
-		  }
-		  if (usersNamedFinn.length==0) {
-		  	app.models[ "trabajo" ].create(ini).exec(function createCB(err, created){
-		  		if(!err && created.autor){
-		  			for (var i = 0; i < dips.length; i++) {
-			  			name=dips[i].name.toLowerCase();
-	        			autor=created.autor.toString().toLowerCase();
-						if (autor.indexOf(name)>-1 && name.length>2) {
-							
-							app.models[ "diputados" ].find({id:dips[i].id}).exec(function(e,r){
-							  r[0].work.add(created.id);
-							  r[0].save(function(err,res){
-							    console.log("link saved",res);
-							  });
-							});
 
-							console.log("linkin",name,autor);
-						}
-	        		}
-		            console.log("errcreating:",err);
-		            console.log("body",created);
-		            done(null);
-		  		}
-		  		else{
-		  			done(null);
-		  		}
-		  		
-	            
-	        });
-		  }
-		  else{
-		  	console.log("existed",ini.resumen);
-		  	done("existed");
-		  }
-		  
-		});
-	}
-	else{
-		done("not filled")
-	}
-	console.log(ini);
-			//inis[i]
-		
-		
-}
 function processDip(list,app){
 	
 	var c = new Crawler({
