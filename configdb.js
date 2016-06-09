@@ -17,14 +17,14 @@ var Waterline=require("waterline")
     },
     connections:
     {
-      // remotec: {
-      //   adapter: 'mongo',
-      //   host: '104.239.249.32', // defaults to `localhost` if omitted
-      //   port: 27017, // defaults to 27017 if omitted
-      //   user: 'bordeA', // or omit if not relevant
-      //   password: '1234', // or omit if not relevant
-      //   database: 'bordeFedA' // or omit if not relevant
-      // }
+      remotec: {
+        adapter: 'mongo',
+        host: '104.239.249.32', // defaults to `localhost` if omitted
+        port: 27017, // defaults to 27017 if omitted
+        user: 'bordeA', // or omit if not relevant
+        password: '1234', // or omit if not relevant
+        database: 'bordeFedA' // or omit if not relevant
+      }
       // mysql: {
       //       adapter   : 'mysql',
       //       host      : 'localhost',
@@ -55,13 +55,13 @@ var Waterline=require("waterline")
       //   user      : 'root',
       //       password  : '1234'
       // }
-      local: {   
-        adapter: 'mongo',
-        port: 27017, // defaults to 27017 if omitted
-        database: 'bordeFedex' // or omit if not relevant
-        // user      : 'root',
-        //     password  : '1234'
-      }
+      // local: {   
+      //   adapter: 'mongo',
+      //   port: 27017, // defaults to 27017 if omitted
+      //   database: 'bordeFedex' // or omit if not relevant
+      //   // user      : 'root',
+      //   //     password  : '1234'
+      // }
 
     },
 
@@ -107,7 +107,7 @@ var diputados = Waterline.Collection.extend({
     gender: {
       type: 'string'
     },
-    temas: {
+    temas: {           // lista de temas
       type: 'json'
     },
     facebook: {

@@ -8,6 +8,7 @@ var async=require('async');
 var Iconv  = require('iconv').Iconv;
 var async=require('async');
 var moment=require('moment');
+var Levenshtein=require('levenshtein');
 moment.locale('es');
 var news_array=[];
 var bscore={}
@@ -25,7 +26,117 @@ Funciones de apoyo a los otros módulos, generar reportes etc.
 
 module.exports = module.export =
 {
-	
+	statsComisiones: function ( req, res, app, cb ){
+		levMatcher("Bananas","bananaz");
+		//obtener todos los legislaores y us iniciativas
+		app.models[ "trabajo" ].find().exec(function createCB(err, trs){ 
+			var comisionesDip={};
+			var comisionesSen={};
+			for (var i = 0; i < trs.length; i++) {
+				
+				
+				console.log(trs[i].name, trs[i].work.length);
+			}
+			console.log(comisiones);
+			res.end( "1" );
+		});
+		
+	},
+	linkTemasDip: function ( req, res, app, cb ){
+		levMatcher("Bananas","bananaz");
+		var comsdip = JSON.parse(fs.readFileSync('crawler/comdiputados.json', 'utf8'));
+		
+		//obtener todos los legislaores y us iniciativas
+		app.models[ "diputados" ].find({camara:"diputados"}).populate("work").exec(function createCB(err, trs){ 
+			var comisiones={};
+			async.forEachSeries(trs, function(subject, callback) { 
+		       
+		       	console.log(subject.name, subject.work.length);
+
+				work=subject.work;
+				temas={
+					"medio ambiente":0,
+					"economía":0,
+					"gobierno":0,
+					"seguridad y justicia":0,
+					"educación y cultura":0,
+					"salud":0
+				}
+				for (var j = 0; j < work.length; j++) {
+					console.log(work[j].turnado,"---");
+					if (work[j].turnado) {
+						inicom=work[j].turnado.split( ".-" ); //".-Diputados -");
+						inicom.pop();
+						inicom.shift();
+						for (var k = 0; k < inicom.length; k++) {
+							truecom=levPicker(inicom[k],comsdip);
+							console.log("-->",inicom[k],"-->",truecom[0],truecom[1]);
+							temas[ truecom[1] ]+=1;
+						}
+					}
+				}
+				//La lista se salva en e campo "temas"
+				app.models[ "diputados" ].update({id:subject.id},{temas:temas}).exec(function afterwards(err, updated){//{trayectoria:dip.trayectoria , silid:dip.uriid}).exec(function afterwards(err, updated){
+				  	console.log("temas updated",updated[0].temas);
+					callback();
+				});
+				
+
+		    }, function(err) {
+		        res.end("DONE")
+		    });
+			
+			
+		});
+		
+	},
+	linkTemasSen: function ( req, res, app, cb ){
+		var comsdip = JSON.parse(fs.readFileSync('crawler/comsenadores.json', 'utf8'));
+		
+		//obtener todos los legislaores y us iniciativas
+		app.models[ "diputados" ].find({camara:"senadores"}).populate("work").exec(function createCB(err, trs){ 
+			var comisiones={};
+			async.forEachSeries(trs, function(subject, callback) { 
+		       
+		       	console.log(subject.name, subject.work.length);
+
+				work=subject.work;
+				temas={
+					"medio ambiente":0,
+					"economía":0,
+					"gobierno":0,
+					"seguridad y justicia":0,
+					"educación y cultura":0,
+					"salud":0
+				}
+				for (var j = 0; j < work.length; j++) {
+					console.log(work[j].turnado,"---");
+					if (work[j].turnado) {
+						inicom=work[j].turnado.split( ".-" ); //".-Diputados -");
+						inicom.pop();
+						inicom.shift();
+						for (var k = 0; k < inicom.length; k++) {
+							truecom=levPicker(inicom[k],comsdip);
+							console.log("-->",inicom[k],"-->",truecom[0],truecom[1]);
+							temas[ truecom[1] ]+=1;
+						}
+					}
+				}
+				//La lista se salva en e campo "temas"
+				app.models[ "diputados" ].update({id:subject.id},{temas:temas}).exec(function afterwards(err, updated){//{trayectoria:dip.trayectoria , silid:dip.uriid}).exec(function afterwards(err, updated){
+				  	console.log("temas updated",updated[0].temas);
+					callback();
+				});
+				
+
+		    }, function(err) {
+		        res.end("DONE")
+		    });
+			
+			
+		});
+		
+	},
 	enlistBS: function ( req, res, app, cb ){
 		app.models[ "diputados" ].find({camara:"diputados"}).exec(function createCB(err, trs){
 			bsl={};
@@ -38,6 +149,23 @@ module.exports = module.export =
 
 		});
 		
+	},
+	enlistInis: function ( req, res, app, cb ){ //Enlista todas las iniciativas
+		console.log("cámara;partido,estado");
+		app.models[ "trabajo" ].find({type:"i"}).exec(function createCB(err, inis){
+			st="cámara;partido;estado;resumen";
+			for (var i = 0; i < inis.length; i++) {
+				if (inis[i].partido) {
+					
+				}
+				console.log(inis[i].camara+";"+inis[i].partido+";"+inis[i].estado+";"+inis[i].resumen);
+				st+=inis[i].camara+";"+inis[i].partido+";"+inis[i].estado+";"+inis[i].resumen+"\n";
+				
+			}
+			res.end( st );
+
+		});
+		 
 	},
 	bss: function ( req, res, app, cb ){
 		for(iddip in bscore){
@@ -124,26 +252,20 @@ module.exports = module.export =
 			});    
 		});
 	},
-	checkok: function ( req, res, app, cb ){
+	checkok: function ( req, res, app, cb ){ //checa que no haya diputados sin id de SIL
 
-		app.models[ "diputados" ].find().populate("work").exec(function createCB(err, trs){
+		app.models[ "diputados" ].find().exec(function createCB(err, trs){
 			c_sidid=0;
 			c_inis=0;
 			for (var i = 0; i < trs.length; i++) {
-				console.log( "inis" ,trs[i].work.length );
-				if (trs[i].trayectoria) {
-
-				}
-				else{
-					console.log( "trayectoria" ,"none" );
-				}
+				//console.log(trs[i].name,trs[i].silid,trs[i].uriid);
 				
-				if (trs[i].silid) {
+				if (trs[i].silid && trs[i].silid>0) {
 					c_sidid+=1;
 					//console.log(trs[i].name,trs[i].silid,trs[i].uriid);
 				}
 				else{
-					console.log(trs[i].name,trs[i].silid,trs[i].uriid);
+					console.log(trs[i].name,trs[i].uriid);
 				}
 				
 			}
@@ -240,10 +362,35 @@ module.exports = module.export =
 		});
 	}
 }
+function levPicker(str,obj){ //cicla un array para obtener el mejor match (levenshtein) en el
+	max=100;
+	maxname="none";
+	for (name in obj) {
+		if (str && str.length>0 && name && name.length>0) {
+			ratio=levMatcher( standard(str) , standard(name) );
+			// console.log(standard(str),standard(name),ratio);
+			if (ratio<max) {
+				max=ratio;
+				maxname=name;
+			}
+		}
+		
+	}
+	return [standard(maxname),standard(obj[maxname]) ];
+}
+function levMatcher(st1,st2){ //implementción de comparación de levenshtein
+	var dl=new Levenshtein( st1, st2 );
+	return dl.distance;
+}
 function partialMatcher(match,list){ //IMPORTANTE
 	for(name in list){
 		subject=list[name];
 		console.log(112,subject);
 	}
+}
+function standard(str){
+	str=str.toLowerCase();
+	str=str.trim();
+	return str
 }
 

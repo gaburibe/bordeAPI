@@ -17,6 +17,7 @@
     "express": "^4.13.4",
     "http-get": "^0.5.10",
     "iconv": "^2.1.11",
+    "levenshtein": "^1.0.5",
     "lodash": "^4.6.1",
     "mocha": "^2.4.5",
     "moment": "^2.12.0",

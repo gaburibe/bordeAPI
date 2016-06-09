@@ -162,7 +162,18 @@ app.get('/utilities/enlistBS',function(req, res, next) {
 app.get('/utilities/addsocial',function(req, res, next) {
   crawl_u.addSocial(req, res, app, next);
 })
-
+app.get('/utilities/enlistInis',function(req, res, next) {
+  crawl_u.enlistInis(req, res, app, next);
+})
+app.get('/utilities/linkTemas/diputados',function(req, res, next) { //para ligar temas desde inciativas
+  crawl_u.linkTemasDip(req, res, app, next);
+})
+app.get('/utilities/linkTemas/senadores',function(req, res, next) { //para ligar temas desde inciativas
+  crawl_u.linkTemasSen(req, res, app, next);
+})
+app.get('/utilities/statsComisiones',function(req, res, next) { //para ligar temas desde inciativas
+  crawl_u.statsComisiones(req, res, app, next);
+})
 
 
 app.listen(port)
