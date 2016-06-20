@@ -116,6 +116,12 @@ app.get('/crawl/federal/pas',function(req, res, next) {
 app.get('/crawl/federal/dipasist',function(req, res, next) {
   crawl_fed.dipAsist(req, res, app, next);
 })
+app.get('/crawl/federal/asistenciaDip',function(req, res, next) { //para ligar temas desde inciativas
+  crawl_fed.asistenciaDip(req, res, app, next);
+})
+app.get('/crawl/federal/debate/dip',function(req, res, next) { //Calcula BS2
+  crawl_fed.debatedips(req, res, app, next);
+})
 
 //Análisis
 //Calcula borde score senadores
@@ -126,12 +132,19 @@ app.get('/borde/federal/historico/sen',function(req, res, next) {
 app.get('/borde/federal/historico/dip',function(req, res, next) {
   borde_fed.dipH(req, res, app, next);
 })
+
 app.get('/borde/record/dip',function(req, res, next) {
   borde_fed.record(req, res, app, next);
 })
 app.get('/borde/record/sen',function(req, res, next) {
   borde_fed.senchafa(req, res, app, next);
 })
+
+app.get('/borde/federal/BS2/dip',function(req, res, next) { //Calcula BS2
+  borde_fed.BS2(req, res, app, next);
+})
+
+
 // app.get('/crawl/federal/pas',function(req, res, next) {
 //   crawl_fed.pas(req, res, app, next);
 // })

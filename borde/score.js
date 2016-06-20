@@ -108,12 +108,74 @@ module.exports = module.export =
 			})
 			
 		})
-
-
-		console.log("miau ;)");
 		
 		
 	},
+	BS2: function ( req, res, app, cb ){
+		makelist("diputados" , "federal" , app , function(err,dips){
+			console.log("BS2 paso1:",dips.length);
+			puestoscamara={};
+			puestospartido={};
+			puestoscomision={};
+			puestos={};
+			puestoscom={};
+			for (var i = 0; i < dips.length; i++) {
+				pc=dips[i].puestoscamara;
+				pp=dips[i].puestospartido;
+				com=dips[i].comisiones;
+				if (!puestos[dips[i].id] || puestoscom[dips[i].id]) {
+					puestos[dips[i].id]=[];
+					puestoscom[dips[i].id]=[];
+				}
+
+				if (pc) {  //evaua los puestos en cámara
+					for (puesto in pc) {
+						
+						puestoscamara[dips[i].id]={
+							instancia:puesto,
+							puesto:pc[puesto],
+							score:catalogaBS2(puesto,pc[puesto])
+						};
+						puestos[dips[i].id].push( puestoscamara[dips[i].id] );
+					}
+				}
+				if (pp && pp.length>0) {  //evaua los puestos en partidos
+					for (puesto in pp) {
+						puestospartido[dips[i].id]={
+							instancia:"partido",
+							puesto:pp[puesto],
+							score:catalogaBS2("partido",pp[puesto])
+						};
+						puestos[dips[i].id].push( puestospartido[dips[i].id] );
+					}	
+				}
+				if(com){  //evaua los puestos en comisiones
+					for (comision in com) {
+						puestoscomision[dips[i].id]={
+							instancia:com[comision].namecom,
+							puesto:com[comision].puestocom,
+							score:catalogaBS2("comision",com[comision].puestocom)
+						};
+						puestoscom[dips[i].id].push( puestoscomision[dips[i].id] );
+					}
+				}
+			}
+			for(diputado in puestos){
+				scoreT=0;
+				for(instancia in diputado){
+					scoreT+=instancia.score
+				}
+			}
+			camp=campana(puestos,100);
+			console.log(camp);
+			camp2=campana(puestoscom,100);
+			console.log(camp2);
+			
+			//console.log(camp2);
+		});
+
+
+	}
 }
 function bordescore3(inis,pas,list, date, app, end){ //Función principal de cálculo
 	dips={};
@@ -630,5 +692,58 @@ function scorefixer(dips,sc,record){
 		return fbr;
 	}
 	
+
+}
+
+function catalogaBS2(instancia, puesto){ //WRAPPER: Devuelve los valores calibrados para cada puesto
+	var catalogo={
+		"mesa directiva":{
+			"secretario":.1,
+			"vicepresidente":.3,
+			"presidente":.7
+		},
+		"partido":{
+			"coordinador":1
+		},
+		"junta de cordinación política":{
+			"presidente":1,
+			"miembro":0
+		},
+		"comision":{
+			"Presidente":.5,
+			"presidente":.5,
+			"secretaría":.3,
+			"Secretario":.3,
+			"miembro":.1,
+			"Integrante":.1
+		}
+
+	}
+	if (!catalogo[instancia]) {return -1}
+	else{
+		return catalogo[instancia][puesto];
+	}
+	
+
+}
+
+function campana(coleccion,scale){
+	camp={};
+	top=0;
+	for(id in coleccion){
+		scorelegis=0;
+		for(categ in coleccion[id]){
+			sc=coleccion[id][categ];
+			scorelegis+=sc.score;
+		}
+		camp[id]={score:scorelegis}
+		if (scorelegis > top) { top= scorelegis}
+	}
+	console.log("top",top)
+	for(id in camp){
+		norm=camp[id].score*scale/top;
+		camp[id].nscore=Math.round(norm);
+	}
+	return camp;
 
 }

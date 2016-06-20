@@ -26,22 +26,7 @@ Funciones de apoyo a los otros módulos, generar reportes etc.
 
 module.exports = module.export =
 {
-	statsComisiones: function ( req, res, app, cb ){
-		levMatcher("Bananas","bananaz");
-		//obtener todos los legislaores y us iniciativas
-		app.models[ "trabajo" ].find().exec(function createCB(err, trs){ 
-			var comisionesDip={};
-			var comisionesSen={};
-			for (var i = 0; i < trs.length; i++) {
-				
-				
-				console.log(trs[i].name, trs[i].work.length);
-			}
-			console.log(comisiones);
-			res.end( "1" );
-		});
-		
-	},
+	
 	linkTemasDip: function ( req, res, app, cb ){
 		levMatcher("Bananas","bananaz");
 		var comsdip = JSON.parse(fs.readFileSync('crawler/comdiputados.json', 'utf8'));
@@ -130,6 +115,68 @@ module.exports = module.export =
 				
 
 		    }, function(err) {
+		        res.end("DONE")
+		    });
+			
+			
+		});
+		
+	},
+	statsComisiones: function ( req, res, app, cb ){
+		var comssen = JSON.parse(fs.readFileSync('crawler/comsenadores.json', 'utf8'));
+		var comsdip = JSON.parse(fs.readFileSync('crawler/comdiputados.json', 'utf8'));
+		statsdip={};
+		statssen={};
+		//obtener todas las iniciativas
+		app.models[ "trabajo" ].find({type:"i"}).exec(function createCB(err, inis){ 
+			var comisiones={};
+			async.forEachSeries(inis, function(ini, callback) { 
+		       		if (ini.camara=="diputados") {
+		       			inicom=ini.turnado.split( ".-" ); //".-Diputados -");
+						inicom.pop();
+						inicom.shift();
+						salida=0;
+						if (ini.estado.indexOf("PUBLICADO")>-1 || ini.estado.indexOf("TURNADO")>-1 || ini.estado.indexOf("DICTAMEN NEGATIVO")>-1 || ini.estado.indexOf("CAMARA REVISORA")>-1) {
+							salida=1;
+						}
+						for (var k = 0; k < inicom.length; k++) {
+							truecom=levPicker(inicom[k],comsdip);
+							if (!statsdip[ truecom[0] ]) {
+								statsdip[ truecom[0] ]={salida:salida,entrada:1};
+							}
+							else{
+								if (salida) { statsdip[ truecom[0] ].salida+=1; }
+								statsdip[ truecom[0] ].entrada+=1;
+							}
+						}
+		       		}
+		       		else{
+		       			inicom=ini.turnado.split( ".-" ); //".-Diputados -");
+						inicom.pop();
+						inicom.shift();
+						salida=0;
+						if (ini.estado.indexOf("PUBLICADO")>-1 || ini.estado.indexOf("TURNADO")>-1 || ini.estado.indexOf("DICTAMEN NEGATIVO")>-1 || ini.estado.indexOf("CAMARA REVISORA")>-1) {
+							salida=1;
+						}
+						for (var k = 0; k < inicom.length; k++) {
+							truecom=levPicker(inicom[k],comssen);
+							if (!statssen[ truecom[0] ]) {
+								statssen[ truecom[0] ]={salida:salida,entrada:1, estado: publicado};
+							}
+							else{
+								if (salida) { statssen[ truecom[0] ].salida+=1; }
+								statssen[ truecom[0] ].entrada+=1;
+							}
+						}
+		       		}
+		       		callback();
+
+		    }, function(err) {
+		    	console.log("Comisiones diputados")
+		    	printCSV(statsdip)
+		    	console.log("Comisiones Senadores")
+		    	printCSV(statssen)
+		    	
 		        res.end("DONE")
 		    });
 			
@@ -368,7 +415,6 @@ function levPicker(str,obj){ //cicla un array para obtener el mejor match (leven
 	for (name in obj) {
 		if (str && str.length>0 && name && name.length>0) {
 			ratio=levMatcher( standard(str) , standard(name) );
-			// console.log(standard(str),standard(name),ratio);
 			if (ratio<max) {
 				max=ratio;
 				maxname=name;
@@ -392,5 +438,10 @@ function standard(str){
 	str=str.toLowerCase();
 	str=str.trim();
 	return str
+}
+function printCSV(object){
+	for (com in object) {
+		console.log(com ,";", object[com].entrada , ";" ,object[com].salida);
+	};
 }
 

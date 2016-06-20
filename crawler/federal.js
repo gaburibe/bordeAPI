@@ -6,10 +6,12 @@ var request = require('request');
 var _ = require('lodash');
 var async=require('async');
 var Iconv  = require('iconv').Iconv;
-var async=require('async');
 var moment=require('moment');
 var fs = require('fs');
+var Levenshtein=require('levenshtein');
 moment.locale('es');
+var pdfText = require('pdf-text');
+
 
 function nextdip(){
 
@@ -18,6 +20,33 @@ function nextdip(){
 module.exports = module.export =
 {
 
+	asistenciaDip: function(req, res, app, cb){
+		var pathToPdf = "pdfasist/asistencia_7abr16_5dias.pdf";
+		dips=[];
+		app.models[ "diputados" ].find({ select: ['name'] }).where( {camara : "diputados"} ).exec(function (errfind, found){
+			dips=[];//found;
+			for (var i = 0; i < found.length; i++) {
+				permnameA=found[i].name.split(" ");
+				permnameA.unshift(permnameA[permnameA.length-1]);
+				permnameA.pop();
+				permnameA.unshift(permnameA[permnameA.length-1]);
+				permnameA.pop();
+				permname=permnameA.join(" ");
+				dips[ permname ]=found[i].id;
+			}
+            console.log(dips);
+            pdfText(pathToPdf, function(err, chunks) {
+				console.log(chunks.length);
+				for (var i = 0; i < chunks.length; i++) {
+					name=levPicker(chunks[i],dips);
+					console.log("chunk",chunks[i],"name",name);
+				}
+				
+			});
+		});
+		
+		 ///index.php/esl/content/download/35119/176290/file/asistencia_04nov15_5dias.pdf
+	},
 	diputadosSIL: function( req, res, app, cb ){  //completa info de diputados desde el portal http://sil.gobernacion.gob.mx/
 		var obj;
 		fs.readFile('crawler/dips.json', 'utf8', function (err, data) {
@@ -467,10 +496,48 @@ module.exports = module.export =
 				console.log('[ '+dips[i].id+' ,"'+dips[i].name+'"]')
 			};
 		});
+	},
+	debatedips: function ( req, res, app, cb ){
+		var idsdeb = JSON.parse(fs.readFileSync('crawler/debatedips.json', 'utf8'));
+		
+		////////////
+		async.forEachSeries(idsdeb, function(subject, callback) { 
+	       	processdebate(subject[1], function(num){
+	       			console.log(subject,num);
+	       			callback();
+	       	});
+	       
+
+	    }, function(err) {
+	        res.end("DONE")
+	    });
+
+		for (name in idsdeb) {
+			console.log( idsdeb[name] );
+		}
 	}
 }
 
 //FUNCIONES DE APOYO PARA EL MÓDULO
+
+function processdebate(id,done){
+	var c = new Crawler({
+		forceUTF8:true,
+	    maxConnections : 100,
+	    callback : function (error, result, $) {
+		    	uri=result.uri;
+		    	body=result.body
+		    	b2=body.split('hits="');
+		    	b3=b2[1].split('"');
+
+		    	console.log("número",b3[0]);
+		    	done(b3[0]);
+		    	
+		    }
+	});
+	c.queue('http://cronica.diputados.gob.mx:8080/exist/siid2/siid2.xql?legis=LXIII&coleccion="/db/LXIII/A1/P1/Ord" ,"/db/LXIII/A1/P1/CPerma" ,"/db/LXIII/A1/P2/Ord" &qu=xquery version "1.0" encoding "iso-8859-1"; for $i at $pos in collection("/db/LXIII/A1/P1/Ord" ,"/db/LXIII/A1/P1/CPerma" ,"/db/LXIII/A1/P2/Ord" )//Tema//Intervencion[@modalidad],  $dip in $i/(B|b)/diputado[1] where $dip[@modalidad ne "DLS"] and $dip[@modalidad ne "AA"] and $dip[@modalidad ne ""] and $dip[@modalidad and @id eq "'+id+'"] order by $i/root()/DiarioDeDebates/attribute(fecha),$i/root()/DiarioDeDebates/@numero  return if (exists($i/ancestor::Tema/Versales)) then <Intervencion><Fecha>{$i/ancestor::DiarioDeDebates/attribute(*)}</Fecha> <asunto> {attribute legis {$i/root()/DiarioDeDebates/@legislatura}} {attribute coleccion {\'/db/LXIII/A1/P1/Ord ,/db/LXIII/A1/P1/CPerma ,/db/LXIII/A1/P2/Ord \'}} {attribute id {$dip/attribute(id)}} {attribute fecha {$i/ancestor::DiarioDeDebates/attribute(fecha)}} {attribute num {$pos}} {$i/ancestor::Tema/Versales/text()}</asunto> </Intervencion>else <Intervencion><Fecha>{$i/ancestor::DiarioDeDebates/attribute(*)}</Fecha> <asunto> {attribute legis {$i/root()/DiarioDeDebates/@legislatura}} {attribute coleccion {\'/db/LXIII/A1/P1/Ord ,/db/LXIII/A1/P1/CPerma ,/db/LXIII/A1/P2/Ord \'}} {attribute id {$dip/attribute(id)}} {attribute fecha {$i/ancestor::DiarioDeDebates/attribute(fecha)}} {attribute num {$pos}} {$i/ancestor::Tema/text()}</asunto> </Intervencion>&_=');
+
+}
 
 function addinis2(ini,dips,app,done){ // SIL
 	app.models[ "trabajo" ].create(ini).exec(function createCB(err, created){
@@ -954,4 +1021,31 @@ function lettermatch(str1,str2){
 		
 	}
 	return m/str1.length;
+}
+
+function levPicker(str,obj){ //cicla un array para obtener el mejor match (levenshtein) en el
+	max=100;
+	maxname="none";
+	for (name in obj) {
+		if (str && str.length>0 && name && name.length>0) {
+			ratio=levMatcher( standard(str) , standard(name) );
+			
+			if (ratio<max && ratio<10) {
+				console.log(standard(str) , standard(name) , ratio)
+				max=ratio;
+				maxname=name;
+			}
+		}
+		
+	}
+	return [standard(maxname),max ];
+}
+function levMatcher(st1,st2){ //implementción de comparación de levenshtein
+	var dl=new Levenshtein( st1, st2 );
+	return dl.distance;
+}
+function standard(str){
+		str=str.toLowerCase();
+		str=str.trim();
+		return str;
 }
