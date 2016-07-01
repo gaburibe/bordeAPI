@@ -131,15 +131,20 @@ module.exports = module.export =
 		app.models[ "trabajo" ].find({type:"i"}).exec(function createCB(err, inis){ 
 			var comisiones={};
 			async.forEachSeries(inis, function(ini, callback) { 
-		       		if (ini.camara=="diputados") {
-		       			inicom=ini.turnado.split( ".-" ); //".-Diputados -");
-						inicom.pop();
-						inicom.shift();
+					if (ini.estado.indexOf("RETIRAD")>-1) {
+						// console.log("retirada")	
+					}
+		       		else if (ini.camara=="diputados") {
+		       			turnado=cleancom(ini.turnado);
+		       			inicom=turnado.split( ".-" ); //".-Diputados -");
+						// inicom.pop();
+						// inicom.shift();
 						salida=0;
 						if (ini.estado.indexOf("PUBLICADO")>-1 || ini.estado.indexOf("TURNADO")>-1 || ini.estado.indexOf("DICTAMEN NEGATIVO")>-1 || ini.estado.indexOf("CAMARA REVISORA")>-1) {
 							salida=1;
 						}
 						for (var k = 0; k < inicom.length; k++) {
+							//cleancom(inicom[k]);
 							truecom=levPicker(inicom[k],comsdip);
 							if (!statsdip[ truecom[0] ]) {
 								statsdip[ truecom[0] ]={salida:salida,entrada:1};
@@ -148,20 +153,24 @@ module.exports = module.export =
 								if (salida) { statsdip[ truecom[0] ].salida+=1; }
 								statsdip[ truecom[0] ].entrada+=1;
 							}
+							if (truecom.indexOf("turismo")>-1) {console.log("deporte",ini.resumen,"--->",turnado,"--->",ini.origen,ini.presentacion,ini.estado)}
 						}
 		       		}
 		       		else{
-		       			inicom=ini.turnado.split( ".-" ); //".-Diputados -");
-						inicom.pop();
-						inicom.shift();
+		       			turnado=cleancom(ini.turnado);
+		       			inicom=turnado.split( ".-" );
+		       			// inicom=ini.turnado.split( ".-" ); //".-Diputados -");
+						// inicom.pop();
+						// inicom.shift();
 						salida=0;
 						if (ini.estado.indexOf("PUBLICADO")>-1 || ini.estado.indexOf("TURNADO")>-1 || ini.estado.indexOf("DICTAMEN NEGATIVO")>-1 || ini.estado.indexOf("CAMARA REVISORA")>-1) {
 							salida=1;
 						}
+
 						for (var k = 0; k < inicom.length; k++) {
 							truecom=levPicker(inicom[k],comssen);
 							if (!statssen[ truecom[0] ]) {
-								statssen[ truecom[0] ]={salida:salida,entrada:1, estado: publicado};
+								statssen[ truecom[0] ]={salida:salida,entrada:1};
 							}
 							else{
 								if (salida) { statssen[ truecom[0] ].salida+=1; }
@@ -422,7 +431,11 @@ function levPicker(str,obj){ //cicla un array para obtener el mejor match (leven
 		}
 		
 	}
-	return [standard(maxname),standard(obj[maxname]) ];
+	if (max>10) {return ["-","-"];}
+	else{
+		return [standard(maxname),standard(obj[maxname]) ];
+	}
+	
 }
 function levMatcher(st1,st2){ //implementción de comparación de levenshtein
 	var dl=new Levenshtein( st1, st2 );
@@ -443,5 +456,13 @@ function printCSV(object){
 	for (com in object) {
 		console.log(com ,";", object[com].entrada , ";" ,object[com].salida);
 	};
+}
+function cleancom(turno){
+	r="";
+	r=turno.replace(/Para dictamen/gi, "");
+	r=r.replace(/Diputados/gi, "");
+	r=r.replace(/Senadores/gi, "");
+	r=r.replace(/Para opinión/gi, "");
+	return r;
 }
 

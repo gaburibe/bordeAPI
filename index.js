@@ -132,7 +132,9 @@ app.get('/borde/federal/historico/sen',function(req, res, next) {
 app.get('/borde/federal/historico/dip',function(req, res, next) {
   borde_fed.dipH(req, res, app, next);
 })
-
+app.get('/borde/score/bs1/sen',function(req, res, next) {
+  borde_fed.bs1v3(req, res, app, next);
+})
 app.get('/borde/record/dip',function(req, res, next) {
   borde_fed.record(req, res, app, next);
 })

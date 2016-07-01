@@ -58,7 +58,7 @@ var Waterline=require("waterline")
       // local: {   
       //   adapter: 'mongo',
       //   port: 27017, // defaults to 27017 if omitted
-      //   database: 'bordeFedex' // or omit if not relevant
+      //   database: 'bordejun' // or omit if not relevant
       //   // user      : 'root',
       //   //     password  : '1234'
       // }

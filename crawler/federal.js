@@ -331,6 +331,13 @@ module.exports = module.export =
 								        if (test=="Iniciativa") {ini.type="i"}
 								        break;
 								    case 2:
+								    	linkcomplete=$(datos2).find("a").attr("onclick");
+								    	
+								    	if (linkcomplete && linkcomplete.length>2) {
+								    		chunks=linkcomplete.split('"');
+								        	ini.link="http://sil.gobernacion.gob.mx/"+chunks[1];
+
+								    	}
 								        ini.resumen=test;
 								        break;
 								    case 3:
@@ -424,19 +431,19 @@ module.exports = module.export =
 
 		////// Estos links cambian diario así que hay que administralrlos de forma manual !!!
 
-		//Inis
-		// for (var i = 1; i <= 19; i++) {  //xiii
-		// 	c.queue('http://sil.gobernacion.gob.mx/Busquedas/Basica/ResultadosBusquedaBasica.php?SID=b90f77b475fb188d8bb062df129b6de5&Origen=BB&Serial=2c535e6d5a9f19fb81dbb7304b7129e1&Reg=1826&Paginas=100&pagina='+i); //4
+		//DIP
+		// for (var i = 1; i <= 21; i++) {  //xiii inis all
+		// 	c.queue('http://sil.gobernacion.gob.mx/Busquedas/Avanzada/ResultadosBusquedaAvanzada.php?SID=503462fb2828e5826c2fbac1fde43505&Origen=BA&Serial=69e4892e6ee56b68c5f19ccf41481179&Reg=2098&Paginas=100&pagina='+i); //4
 		// }
-		// for (var i = 1; i <= 54; i++) {  //xii
-		// 	c.queue('http://sil.gobernacion.gob.mx/Busquedas/Basica/ResultadosBusquedaBasica.php?SID=94de5b7d3e222c6bf00cbf727763fdbe&Origen=BB&Serial=338ef28943fb6bcf7398e9fb5c62b9d4&Reg=5357&Paginas=100&pagina='+i); //4
+		// for (var i = 1; i <= 35; i++) {  //xiii pas all
+		// 	c.queue('http://sil.gobernacion.gob.mx/Busquedas/Avanzada/ResultadosBusquedaAvanzada.php?SID=503462fb2828e5826c2fbac1fde43505&Origen=BA&Serial=f04a28fb0ffaaf88481699b8caee39e7&Reg=3427&Paginas=100&pagina='+i); //4
 		// }
-		////pas
-		// for (var i = 1; i <= 29; i++) {  //xiii
-		// 	c.queue('http://sil.gobernacion.gob.mx/Busquedas/Basica/ResultadosBusquedaBasica.php?SID=ac2b004135240d43edbea60eba0c972f&Origen=BB&Serial=10b9cb8db5230274392e1ea2e4062446&Reg=2878&Paginas=100&pagina='+i); //4
+		////SEN
+		// for (var i = 1; i <= 19; i++) {  //xii senadores inis
+		// 	c.queue('http://sil.gobernacion.gob.mx/Busquedas/Avanzada/ResultadosBusquedaAvanzada.php?SID=503462fb2828e5826c2fbac1fde43505&Origen=BA&Serial=4d2c522a63ad26e96281578d872172c7&Reg=1870&Paginas=100&pagina='+i); //4
 		// }
-		for (var i = 1; i <= 85; i++) {  //xii
-			c.queue('http://sil.gobernacion.gob.mx/Busquedas/Basica/ResultadosBusquedaBasica.php?SID=5b18ddd97640b81817b1b06354b959d5&Origen=BB&Serial=09a350c15b4b6e5e90837dfb29b6bd07&Reg=8456&Paginas=100&pagina='+i); //4
+		for (var i = 1; i <= 29; i++) {  //xii senadores pas
+			c.queue('http://sil.gobernacion.gob.mx/Busquedas/Avanzada/ResultadosBusquedaAvanzada.php?SID=503462fb2828e5826c2fbac1fde43505&Origen=BA&Serial=6d4f0eb987789085d3472eee18568797&Reg=2824&Paginas=100&pagina='+i); //4
 		}
 		
 	},
@@ -554,7 +561,7 @@ function addinis2(ini,dips,app,done){ // SIL
 						//   });
 						// });
 
-						console.log("linkin",name,autor);
+						//console.log("linkin",name,autor);
 					}
         		}
 	            console.log("errcreating:",err);

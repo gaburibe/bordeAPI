@@ -9,10 +9,44 @@ var async=require('async');
 var Iconv  = require('iconv').Iconv;
 var async=require('async');
 var moment=require('moment');
+var sstats=require('simple-statistics');
 moment.locale('es');
 
 module.exports = module.export =
 {
+	bs1v3: function (req, res, app, cb){ //BS1 versión 1.3
+		async.series({
+			inis:function (next){
+				next(null,[]); // COMENTADO PUESTO QUE SE SACA TODA LA INFIORMACIÓN EN "makelist"
+				// legis=["LXII","LXIII"]
+				// getTrabajo( "i" , "Federal" , "senadores", legis , app ,function (status,inis){
+				// 	next(null,inis);
+				// })
+			},
+			pas:function (next){
+				next(null,[]);// COMENTADO PUESTO QUE SE SACA TODA LA INFIORMACIÓN EN "makelist"
+				// getTrabajo( "pa" , "Federal" , "senadores", legis , app ,function (status,pas){
+				// 	next(null,pas);
+				// })
+			},
+			list:function (next){
+				date=moment();
+				makelist( "senadores" , "Federal" , app ,function (status,dips){
+					next(null,dips);
+				})
+			}
+		} , function(err, results){
+			//console.log("subjects",results.list.length);
+			date=moment();
+			inisr=i_aprobado(results.list);
+			// bordescore3(results.inis , results.pas ,results.list, date , app , function( bs ){
+			// 	mean=sstats.mean([0, 10]);
+			// 	console.log(mean,"mean");
+			// })
+			
+		})
+		
+	},
 	record: function ( req, res, app, cb ){
 		app.models[ "diputados" ].find({camara:"diputados"}).exec(function createCB(err, dips){
 			document={};
@@ -176,6 +210,156 @@ module.exports = module.export =
 
 
 	}
+}
+function pa_score(list){
+
+}
+function i_aprobado(list){
+	dips={};
+	coleccion_i={};
+	coleccion_pa={};
+	maxr=0;
+	camara="-";
+	aprobadas_legis={};
+	aprobadas_party={};
+	presentadas_legis={};
+	dips={};
+	aprobadas_party_arr={};
+	async.forEachSeries(list, function(legis, callback) {  //ciclo sobre todos los legisladores
+        
+		
+
+		name=legis.name.toLowerCase();
+
+		party=legis.party;
+
+		if (!aprobadas_party[party]) {aprobadas_party[party]=0;  } //prepara arrays para agregados en iniciaivas
+
+		iddip=legis.id;
+		ini_legis={}
+		aprobadas_legis[legis.name]=0;
+		presentadas_legis[legis.name]=0;
+		dips[legis.name]={presentadas:0,aprobadas:0,pas:0}
+		dips[legis.name].pas=0;
+		// dips[iddip]={ medios:0 , debate:0, inis:0 , pas:0 , asistencia:0 , bs:0 };
+		for (var j = 0; j < legis.work.length; j++) {
+			type=legis.work[j].type;
+			camara=legis.camara;
+			estado=legis.work[j].estado;
+			
+			if (type=="pa") {
+				dips[legis.name].pas+=1;
+				//dips[iddip].pas+=1;
+			}
+			if (type=="i") { //Se calculan todos losagregados aquí
+				
+				presentadas_legis[legis.name]+=1;
+				//aprobadas_party[party]=[];
+
+				if ( estado.indexOf("CAMARA REVISORA") > -1 ) {
+					aprobadas_legis[legis.name]+=1;
+					aprobadas_party[party]+=1;
+				
+				}
+				else if( estado.indexOf("PUBLICADO EN D.O.F") > -1 ){
+					aprobadas_legis[legis.name]+=1;
+					aprobadas_party[party]+=1;
+
+				}
+				else if( estado.indexOf("DEVUELTO A CAMARA DE ORIGEN") > -1 ){
+					aprobadas_legis[legis.name]+=1;
+					aprobadas_party[party]+=1;
+
+					
+				}
+				else if( estado.indexOf("TURNADO AL EJECUTIVO") > -1 ){
+					aprobadas_legis[legis.name]+=1;
+					aprobadas_party[party]+=1;
+
+					
+				}
+				else if( estado.indexOf("DEVUELTO A COMISION(ES) DE CAMARA DE ORIGEN") > -1 ){
+					aprobadas_legis[legis.name]+=1;
+					aprobadas_party[party]+=1;
+
+					
+				}
+				else if( estado.indexOf("DICTAMEN NEGATIVO APROBADO EN CAMARA DE ORIGEN") > -1 ){
+
+				}
+				else if( estado.indexOf("DESECHADO") > -1 ){
+
+				}
+				else if( estado.indexOf("DE PRIMERA LECTURA EN CAMARA DE ORIGEN") > -1 ){
+
+				}
+				else if( estado.indexOf("RETIRADA") > -1 ){
+
+				}
+				else{
+
+				}
+				
+				
+			}
+
+		}
+		if (!aprobadas_party_arr[party]) { aprobadas_party_arr[party]=[]; }
+		aprobadas_party_arr[party].push( aprobadas_legis[legis.name] );
+		dips[legis.name].id=legis.id;
+		dips[legis.name].party=legis.party;
+		dips[legis.name].presentadas=presentadas_legis[legis.name];
+		dips[legis.name].aprobadas=aprobadas_legis[legis.name];
+		
+      	callback();
+    }, function(err) {
+        console.log("DONE");
+        //agregados.
+        parr=[];
+        aarr=[];
+        for(key in presentadas_legis){ parr.push( presentadas_legis[key] ) }
+        for(key in aprobadas_legis){ aarr.push( aprobadas_legis[key] ) }
+        mean_presentadas=sstats.mean(parr);
+    	mean_aprobadas=sstats.mean(aarr);
+    	stdev_presentadas=sstats.standardDeviation(parr)
+    	stdev_aprobadas=sstats.standardDeviation(aarr) //aprobadas_party_arr
+    	max_aprobadas=sstats.max(aarr); // Máximo de aprobadas
+    	console.log("aprobadas_party_arr",aprobadas_party_arr);
+		console.log("preentadas-media",mean_presentadas," aprobadas-media",stdev_presentadas);
+		countap=[]; //para sacar el máximo de aprobadas en la legislatura
+		for(name in dips){
+
+			dipparty=dips[name].party;
+			dips[name].normal_presentadas=0;
+			dips[name].factor_presentadas=0;
+			dips[name].normal_presentadas=(dips[name].presentadas-mean_presentadas)/stdev_presentadas;
+			dips[name].factor_presentadas=Math.ceil( Math.abs( dips[name].normal_presentadas ) );
+			stdev_party= sstats.standardDeviation( aprobadas_party_arr[dipparty] );
+			mean_party= sstats.mean( aprobadas_party_arr[dipparty] );
+			
+			dips[name].stats=[party, stdev_party,mean_party];
+			dips[name].factor_aprobadas=Math.abs( (dips[name].aprobadas-mean_party)/stdev_party );
+			dips[name].scoreP=dips[name].presentadas/dips[name].factor_presentadas;
+			dips[name].scoreA=dips[name].factor_aprobadas*dips[name].aprobadas*max_aprobadas;
+			dips[name].scoreI=dips[name].scoreP+dips[name].scoreA;
+		}
+		for (nombre in dips) {
+
+			dip=dips[nombre];
+			coleccion_i[dip.id]=[];
+			coleccion_pa[dip.id]=[];
+			coleccion_i[dip.id].push( {tipo:"iniciativas",score:dip.scoreI} );
+			coleccion_pa[dip.id].push( {tipo:"pas",score:dip.pas} );
+			
+			console.log(nombre,"-",dip.scoreP,"-",dip.scoreA,"=" ,dip.scoreI,"pas:",dip.pas )
+
+			//console.log(nombre+";"+dip.party+";"+dip.presentadas+";"+dip.aprobadas+";"+dip.factor_presentadas+";"+dip.factor_aprobadas+";"+dip.stats[1]+";"+dip.stats[2])	
+		}
+		campana_i=campana(coleccion_i,100);
+		campana_pa=campana(coleccion_pa,100);
+        console.log("campana inis:",campana_i);
+        console.log("campana pas:",campana_pa);
+    });
 }
 function bordescore3(inis,pas,list, date, app, end){ //Función principal de cálculo
 	dips={};
@@ -698,24 +882,24 @@ function scorefixer(dips,sc,record){
 function catalogaBS2(instancia, puesto){ //WRAPPER: Devuelve los valores calibrados para cada puesto
 	var catalogo={
 		"mesa directiva":{
-			"secretario":.1,
-			"vicepresidente":.3,
-			"presidente":.7
+			"secretario":1,
+			"vicepresidente":3,
+			"presidente":4
 		},
 		"partido":{
 			"coordinador":1
 		},
 		"junta de cordinación política":{
-			"presidente":1,
-			"miembro":0
+			"presidente":4,
+			"miembro":1
 		},
 		"comision":{
-			"Presidente":.5,
-			"presidente":.5,
-			"secretaría":.3,
-			"Secretario":.3,
-			"miembro":.1,
-			"Integrante":.1
+			"Presidente":2,
+			"presidente":2,
+			"secretaría":1,
+			"Secretario":1,
+			"miembro":.5,
+			"Integrante":.5
 		}
 
 	}
@@ -727,7 +911,7 @@ function catalogaBS2(instancia, puesto){ //WRAPPER: Devuelve los valores calibra
 
 }
 
-function campana(coleccion,scale){
+function campana(coleccion,scale){ //Debe ser del tipo coleccion[id]=[ { instancia: 'Energía', puesto: 'Secretario', score: 1 },{} ]
 	camp={};
 	top=0;
 	for(id in coleccion){
