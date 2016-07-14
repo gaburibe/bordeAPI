@@ -142,7 +142,7 @@ app.get('/borde/record/sen',function(req, res, next) {
   borde_fed.senchafa(req, res, app, next);
 })
 
-app.get('/borde/federal/BS2/dip',function(req, res, next) { //Calcula BS2
+app.get('/borde/federal/BS2/sen',function(req, res, next) { //Calcula BS2
   borde_fed.BS2(req, res, app, next);
 })
 

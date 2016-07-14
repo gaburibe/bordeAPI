@@ -12,6 +12,16 @@ var moment=require('moment');
 var sstats=require('simple-statistics');
 moment.locale('es');
 
+
+Object.size = function(obj) {
+    var size = 0, key;
+    for (key in obj) {
+        if (obj.hasOwnProperty(key)) size++;
+    }
+    return size;
+};
+
+
 module.exports = module.export =
 {
 	bs1v3: function (req, res, app, cb){ //BS1 versión 1.3
@@ -38,7 +48,8 @@ module.exports = module.export =
 		} , function(err, results){
 			//console.log("subjects",results.list.length);
 			date=moment();
-			inisr=i_aprobado(results.list);
+			bs1=trabajo_legis(results.list);
+			//bs1Suma(inisr);
 			// bordescore3(results.inis , results.pas ,results.list, date , app , function( bs ){
 			// 	mean=sstats.mean([0, 10]);
 			// 	console.log(mean,"mean");
@@ -146,22 +157,37 @@ module.exports = module.export =
 		
 	},
 	BS2: function ( req, res, app, cb ){
-		makelist("diputados" , "federal" , app , function(err,dips){
+		makelist("senadores" , "federal" , app , function(err,dips){
 			console.log("BS2 paso1:",dips.length);
 			puestoscamara={};
 			puestospartido={};
 			puestoscomision={};
 			puestos={};
 			puestoscom={};
+			puestosbs2={};
+			namedict={};
+			testob={};
 			for (var i = 0; i < dips.length; i++) {
+				testob[dips[i].id]={};
+				printer={
+				'instituto belisario domingues':"-",
+				'mesa directiva':"-",
+				'junta de cordinación política':"-",
+				'instituto belisario domingues':"-",
+				};
+				allstring="";
 				pc=dips[i].puestoscamara;
 				pp=dips[i].puestospartido;
 				com=dips[i].comisiones;
+				namedict[dips[i].id]=dips[i].name;
 				if (!puestos[dips[i].id] || puestoscom[dips[i].id]) {
 					puestos[dips[i].id]=[];
 					puestoscom[dips[i].id]=[];
 				}
 
+				allstring=dips[i].name;
+
+				console.log(dips[i].id+";"+dips[i].name)
 				if (pc) {  //evaua los puestos en cámara
 					for (puesto in pc) {
 						
@@ -170,7 +196,10 @@ module.exports = module.export =
 							puesto:pc[puesto],
 							score:catalogaBS2(puesto,pc[puesto])
 						};
+						printer[puesto]=pc[puesto];
+						allstring+=";"+pc[puesto]
 						puestos[dips[i].id].push( puestoscamara[dips[i].id] );
+						console.log(";"+pc[puesto]+";"+puesto+";"+puestoscamara[dips[i].id].score);
 					}
 				}
 				if (pp && pp.length>0) {  //evaua los puestos en partidos
@@ -180,20 +209,27 @@ module.exports = module.export =
 							puesto:pp[puesto],
 							score:catalogaBS2("partido",pp[puesto])
 						};
+						printer["partido"]=pp[puesto];
 						puestos[dips[i].id].push( puestospartido[dips[i].id] );
+						console.log(";"+pp[puesto]+";"+"partido"+";"+puestospartido[dips[i].id].score);
 					}	
 				}
 				if(com){  //evaua los puestos en comisiones
 					for (comision in com) {
+						factor=coms_Sen(com[comision].namecom);
 						puestoscomision[dips[i].id]={
 							instancia:com[comision].namecom,
 							puesto:com[comision].puestocom,
-							score:catalogaBS2("comision",com[comision].puestocom)
+							score:factor*catalogaBS2("comision",com[comision].puestocom)
 						};
+						printer[com[comision].namecom]=com[comision].puestocom;
 						puestoscom[dips[i].id].push( puestoscomision[dips[i].id] );
+						console.log(";"+com[comision].puestocom+";"+com[comision].namecom+";"+puestoscomision[dips[i].id].score);
 					}
 				}
+				testob[dips[i].id]=printer;
 			}
+			
 			for(diputado in puestos){
 				scoreT=0;
 				for(instancia in diputado){
@@ -201,10 +237,31 @@ module.exports = module.export =
 				}
 			}
 			camp=campana(puestos,100);
-			console.log(camp);
-			camp2=campana(puestoscom,100);
-			console.log(camp2);
 			
+			camp2=campana(puestoscom,100);
+			
+
+			for(idd in camp){
+				puestosbs2[idd]=[];
+				score=camp[idd].score+camp2[idd].score;
+				tk={
+							instancia:"BS2",
+							puesto:"-",
+							score:score
+						};
+						console.log("res",camp[idd].score,camp2[idd].score,score)
+				puestosbs2[idd].push( tk );
+			}
+
+			campbs2=campana(puestosbs2,100);
+			for(idd in campbs2){ //para hacer reporte
+				//console.log(idd,";",namedict[idd],";",camp[idd].score,";",camp2[idd].score,";",campbs2[idd].score,";",campbs2[idd].nscore);
+			}
+
+			// console.log("c1",camp);
+			// console.log("c2",camp2);
+			console.log("c3",campbs2);
+			console.log("crazy",testob)
 			//console.log(camp2);
 		});
 
@@ -214,16 +271,24 @@ module.exports = module.export =
 function pa_score(list){
 
 }
-function i_aprobado(list){
+function bs1Suma(trabajo){
+
+
+}
+function trabajo_legis(list){
 	dips={};
 	coleccion_i={};
 	coleccion_pa={};
+	coleccion_deb={};
+	coleccion_asist={};
+	coleccion_BS1={};
 	maxr=0;
 	camara="-";
 	aprobadas_legis={};
 	aprobadas_party={};
 	presentadas_legis={};
 	dips={};
+	namedict={}
 	aprobadas_party_arr={};
 	async.forEachSeries(list, function(legis, callback) {  //ciclo sobre todos los legisladores
         
@@ -232,7 +297,7 @@ function i_aprobado(list){
 		name=legis.name.toLowerCase();
 
 		party=legis.party;
-
+		namedict[legis.id]=legis.name;
 		if (!aprobadas_party[party]) {aprobadas_party[party]=0;  } //prepara arrays para agregados en iniciaivas
 
 		iddip=legis.id;
@@ -241,6 +306,8 @@ function i_aprobado(list){
 		presentadas_legis[legis.name]=0;
 		dips[legis.name]={presentadas:0,aprobadas:0,pas:0}
 		dips[legis.name].pas=0;
+		dips[legis.name].asistencia=legis.asistencia;
+		dips[legis.name].debatelist=legis.debatelist;
 		// dips[iddip]={ medios:0 , debate:0, inis:0 , pas:0 , asistencia:0 , bs:0 };
 		for (var j = 0; j < legis.work.length; j++) {
 			type=legis.work[j].type;
@@ -317,6 +384,7 @@ function i_aprobado(list){
         //agregados.
         parr=[];
         aarr=[];
+        debate_list=[];
         for(key in presentadas_legis){ parr.push( presentadas_legis[key] ) }
         for(key in aprobadas_legis){ aarr.push( aprobadas_legis[key] ) }
         mean_presentadas=sstats.mean(parr);
@@ -346,19 +414,71 @@ function i_aprobado(list){
 		for (nombre in dips) {
 
 			dip=dips[nombre];
+			coleccion_deb[dip.id]=[];
+			coleccion_asist[dip.id]=[];
 			coleccion_i[dip.id]=[];
 			coleccion_pa[dip.id]=[];
 			coleccion_i[dip.id].push( {tipo:"iniciativas",score:dip.scoreI} );
 			coleccion_pa[dip.id].push( {tipo:"pas",score:dip.pas} );
+			if (dip.debatelist) {
+				coleccion_deb[dip.id].push( {tipo:"debate",score:dip.debatelist.length} );
+				dip.debscore=dip.debatelist.length;
+			}
+			else{
+				coleccion_deb[dip.id].push( {tipo:"debate",score:"1"} );
+				dip.debscore=1;
+			}
+			if (dip.asistencia) {
+				var size = Object.size(dip.asistencia);
+				coleccion_asist[dip.id].push( {tipo:"asistencia",score:size} );
+				dip.asistscore=dip.asistencia.length;
+			}
+			else{
+				coleccion_asist[dip.id].push( {tipo:"debate",score:"1"} );
+				dip.asistscore=1;
+			}
 			
-			console.log(nombre,"-",dip.scoreP,"-",dip.scoreA,"=" ,dip.scoreI,"pas:",dip.pas )
+			
+			console.log(nombre,"-",dip.scoreP,"-",dip.scoreA,"=" ,dip.scoreI,"pas:",dip.pas,"debate:",dip.debscore )
 
-			//console.log(nombre+";"+dip.party+";"+dip.presentadas+";"+dip.aprobadas+";"+dip.factor_presentadas+";"+dip.factor_aprobadas+";"+dip.stats[1]+";"+dip.stats[2])	
 		}
+
 		campana_i=campana(coleccion_i,100);
-		campana_pa=campana(coleccion_pa,100);
         console.log("campana inis:",campana_i);
+        campana_pa=campana(coleccion_pa,100);
         console.log("campana pas:",campana_pa);
+        campana_deb=campana(coleccion_deb,100);
+        console.log("campana deb:",campana_deb);
+        campana_asist=campana(coleccion_asist,100);
+        console.log("campana asistencia:",campana_asist);
+
+        //después de tener los inzumos se calcula el BS1 ciclando dips
+
+        for(nombre in dips){
+
+        	dip=dips[nombre];
+        	id=dip.id;
+        	coleccion_BS1[id]=[];
+        	asistencias=Math.max(campana_asist[id].score, 90);
+        	score=( campana_i[id].score*.3+campana_pa[id].score*.1+campana_deb[id].score*.2 )*asistencias*.1;
+        	coleccion_BS1[id].push( {tipo:"BS1",score:score} );
+        }
+        //Hacer campana para calcular con BS2
+        campana_BS1=campana(coleccion_BS1,100);
+        console.log("campana BS1:",campana_BS1);
+        for(id in campana_BS1){
+        	nnamee=namedict[id];
+        	console.log(
+        			nnamee+";",
+        			campana_i[id].nscore+";",
+        			campana_pa[id].nscore+";",
+        			campana_deb[id].nscore+";",
+        			campana_asist[id].nscore+";",
+        			campana_BS1[id].nscore
+        		);
+        }
+        return campana_BS1;
+
     });
 }
 function bordescore3(inis,pas,list, date, app, end){ //Función principal de cálculo
@@ -882,7 +1002,7 @@ function scorefixer(dips,sc,record){
 function catalogaBS2(instancia, puesto){ //WRAPPER: Devuelve los valores calibrados para cada puesto
 	var catalogo={
 		"mesa directiva":{
-			"secretario":1,
+			"secretario":3,
 			"vicepresidente":3,
 			"presidente":4
 		},
@@ -893,13 +1013,27 @@ function catalogaBS2(instancia, puesto){ //WRAPPER: Devuelve los valores calibra
 			"presidente":4,
 			"miembro":1
 		},
+		"instituto belisario domingues":{
+			"presidente":4,
+			"secretario":2
+		},
+		"cogati":{
+			"presidente":4,
+			"secretario":2,
+			"miembro":1
+		},
+		 "Comité de Fomento a la Lectura": {
+		 	"presidente":4,
+			"secretario":2,
+		 	"miembro":1
+		 },
 		"comision":{
 			"Presidente":2,
 			"presidente":2,
 			"secretaría":1,
 			"Secretario":1,
-			"miembro":.5,
-			"Integrante":.5
+			"miembro":.4,
+			"Integrante":.4
 		}
 
 	}
@@ -910,9 +1044,21 @@ function catalogaBS2(instancia, puesto){ //WRAPPER: Devuelve los valores calibra
 	
 
 }
+function coms_Sen(comision){
+	truecom=comision.toLowerCase();
+	coms=["studios legislativ","constitucionales","justicia","gobernaci","educaci"]
+	console.log(truecom);
+	for (var i = coms.length - 1; i >= 0; i--) {
+		if (truecom.indexOf(coms[i]) > -1 ) {
+			console.log("match!!!!!");
+			return 2;
+		}
+	}
+	return 1;
+}
 
 function campana(coleccion,scale){ //Debe ser del tipo coleccion[id]=[ { instancia: 'Energía', puesto: 'Secretario', score: 1 },{} ]
-	camp={};
+	campcalc={};
 	top=0;
 	for(id in coleccion){
 		scorelegis=0;
@@ -920,14 +1066,14 @@ function campana(coleccion,scale){ //Debe ser del tipo coleccion[id]=[ { instanc
 			sc=coleccion[id][categ];
 			scorelegis+=sc.score;
 		}
-		camp[id]={score:scorelegis}
+		campcalc[id]={score:scorelegis}
 		if (scorelegis > top) { top= scorelegis}
 	}
 	console.log("top",top)
-	for(id in camp){
-		norm=camp[id].score*scale/top;
-		camp[id].nscore=Math.round(norm);
+	for(id in campcalc){
+		norm=campcalc[id].score*scale/top;
+		campcalc[id].nscore=Math.round(norm);
 	}
-	return camp;
+	return campcalc;
 
 }

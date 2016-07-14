@@ -506,22 +506,58 @@ module.exports = module.export =
 	},
 	debatedips: function ( req, res, app, cb ){
 		var idsdeb = JSON.parse(fs.readFileSync('crawler/debatedips.json', 'utf8'));
-		
+		app.models[ "diputados" ].find({ 
+			select: ['id','name'],
+			where:  { camara : "diputados" , debateUpdated: {$exists: false} },
+		}).exec(function (errfind, found){
+			dips=found;
+			ndips={};
+			for(dip in dips){
+				ndips[dips[dip].name]=dips[dip].id;
+			}
+			console.log(ndips);
+			async.forEachSeries(idsdeb, function(subject, callback) { 
+		       	processdebate(subject[1], function(num){
+		       			console.log(subject,num);
+		       			chunks=subject[0].split(" ");
+		       			np="";
+		       			for (var i = 0; i < chunks.length-1; i++) {
+		       				np+=chunks[i]+" ";
+		       			}
+		       			np+=chunks[chunks.length-1]+" "+np;
+		       			
+		       			
+		       			resv=levPicker(np,ndips);
+		       			iddip=ndips[resv[0]];
+		       			debateArr=[];
+		       			for(i=0;i<num;i++){
+		       				debateArr[i]="_";
+		       			}
+		       			console.log("y--->",resv,resv[0],iddip,ndips[resv[0]]);
+		       			if (name!="null") {
+		       				app.models[ "diputados" ].update({name:resv[0]},{debate:debateArr,debateUpdated:1}).exec(function afterwards(err, updated){//{trayectoria:dip.trayectoria , silid:dip.uriid}).exec(function afterwards(err, updated){
+							  	console.log('Updated',updated);	
+							  	callback();
+							});
+		       			}else{
+		       				callback();
+		       			}
+		       			
+		       			
+		       	});
+		       
+
+		    }, function(err) {
+		        res.end("DONE")
+		    });
+				
+		});
 		////////////
-		async.forEachSeries(idsdeb, function(subject, callback) { 
-	       	processdebate(subject[1], function(num){
-	       			console.log(subject,num);
-	       			callback();
-	       	});
-	       
+		
 
-	    }, function(err) {
-	        res.end("DONE")
-	    });
-
-		for (name in idsdeb) {
-			console.log( idsdeb[name] );
-		}
+		// for (name in idsdeb) {
+		// 	console.log( idsdeb[name] );
+		// }
 	}
 }
 
@@ -1033,18 +1069,20 @@ function lettermatch(str1,str2){
 function levPicker(str,obj){ //cicla un array para obtener el mejor match (levenshtein) en el
 	max=100;
 	maxname="none";
+	console.log(str);
 	for (name in obj) {
 		if (str && str.length>0 && name && name.length>0) {
 			ratio=levMatcher( standard(str) , standard(name) );
-			
-			if (ratio<max && ratio<10) {
-				console.log(standard(str) , standard(name) , ratio)
+			if (ratio<max && ratio<20) {
+				// console.log(standard(str) , standard(name) , ratio)
 				max=ratio;
 				maxname=name;
+				console.log(maxname +"--"+ str );
 			}
 		}
 		
 	}
+
 	return [standard(maxname),max ];
 }
 function levMatcher(st1,st2){ //implementción de comparación de levenshtein
