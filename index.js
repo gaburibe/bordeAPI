@@ -101,12 +101,11 @@ app.get('/crawl/federal/dip/sil',function(req, res, next) {
 app.get('/crawl/federal/sen/sil',function(req, res, next) {
   crawl_fed.senadoresSIL(req, res, app, next);
 })
+
 app.get('/crawl/federal/sen',function(req, res, next) {
   crawl_fed.senadores2(req, res, app, next);
 })
-app.get('/crawl/federal/sent',function(req, res, next) {
-  crawl_fed.senadoresSIL(req, res, app, next);//diputados(req, res, app, next);
-})
+
 app.get('/crawl/federal/iniciativas',function(req, res, next) {
   crawl_fed.iniciativas(req, res, app, next);
 })

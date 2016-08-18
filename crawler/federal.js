@@ -988,7 +988,7 @@ function processDipSil(subject,camara,app,done){
 						  }
 						  if (usersNamedFinn.length==0) {
 						  	console.log("nonexistent",dip.name,"<-")
-						  	//next(null,dip);
+						  	next(null,dip);
 						  	// app.models[ "diputados" ].create(dip).exec(function createCB(err, created){
 					    //         console.log("errcreating:",err);
 					    //         console.log("created",created.name);
@@ -1005,7 +1005,7 @@ function processDipSil(subject,camara,app,done){
 						  	app.models[ "diputados" ].update({silid:dip.silid},{age:dip.age, mail:dip.mail}).exec(function afterwards(err, updated){//{trayectoria:dip.trayectoria , silid:dip.uriid}).exec(function afterwards(err, updated){
 							  	console.log("existed",dip.name);
 						  		next(null,dip);
-							  	console.log('Updated user to have name ' + updated[0].name,updated[0].silid);
+							  	console.log('Updated user to have age ',updated[0].age);
 							});
 						  	
 						  }
