@@ -26,7 +26,37 @@ Funciones de apoyo a los otros módulos, generar reportes etc.
 
 module.exports = module.export =
 {
-	
+	addFromJson: function( req, res, app, cb ){  //completa info de diputados desde el portal http://sil.gobernacion.gob.mx/
+		var obj;
+		fs.readFile('archivo/sexo.json', 'utf8', function (err, data) {
+		  if (err) throw err;
+		  obj = JSON.parse(data);
+		  	async.forEachSeries(obj, function(sub, callback) { 
+		       subject=sub;
+		       idd=subject[1].trim();
+		       		       console.log(subject[1] , "-"+idd+"-");
+
+		       app.models[ "diputados" ].update(idd , { sexo:subject[3] }).exec(function afterwards(err, upd){//{trayectoria:dip.trayectoria , silid:dip.uriid}).exec(function afterwards(err, updated){
+				  		console.log("sexo updated",upd,err);
+				  
+				  	
+					callback();
+				});
+		     	// callback();
+		    }, function(err) {
+		        res.end("DONE")
+		    });
+		});
+	},
+	makeMeAList: function ( req, res, app, cb ){ //Función de apollo para la creación de listas
+		app.models[ "diputados" ].find().exec(function createCB(err, list){ 
+			for(subject in list){
+				dip=list[subject];
+				console.log(dip.name,";",dip.id,";",dip.camara,dip.party);
+
+			}
+		});
+	},
 	linkTemasDip: function ( req, res, app, cb ){
 		levMatcher("Bananas","bananaz");
 		var comsdip = JSON.parse(fs.readFileSync('crawler/comdiputados.json', 'utf8'));
@@ -47,22 +77,29 @@ module.exports = module.export =
 					"educación y cultura":0,
 					"salud":0
 				}
+				temas2={}
 				for (var j = 0; j < work.length; j++) {
 					console.log(work[j].turnado,"---");
 					if (work[j].turnado) {
 						inicom=work[j].turnado.split( ".-" ); //".-Diputados -");
+						idini=work[j].id;
 						inicom.pop();
 						inicom.shift();
 						for (var k = 0; k < inicom.length; k++) {
-							truecom=levPicker(inicom[k],comsdip);
+							truecom=levPicker0(inicom[k],comsdip);
 							console.log("-->",inicom[k],"-->",truecom[0],truecom[1]);
 							temas[ truecom[1] ]+=1;
+							if (truecom[1].length>3) {
+								temas2[idini]=truecom[1];
+								console.log("addin",truecom[1])
+							}
 						}
+						
 					}
 				}
 				//La lista se salva en e campo "temas"
-				app.models[ "diputados" ].update({id:subject.id},{temas:temas}).exec(function afterwards(err, updated){//{trayectoria:dip.trayectoria , silid:dip.uriid}).exec(function afterwards(err, updated){
-				  	console.log("temas updated",updated[0].temas);
+				app.models[ "diputados" ].update({id:subject.id},{temas:temas,temas2:temas2}).exec(function afterwards(err, updated){//{trayectoria:dip.trayectoria , silid:dip.uriid}).exec(function afterwards(err, updated){
+				  	console.log("temas updated",updated[0].temas,updated[0].temas2);
 					callback();
 				});
 				
@@ -94,21 +131,27 @@ module.exports = module.export =
 					"educación y cultura":0,
 					"salud":0
 				}
+				temas2={}
 				for (var j = 0; j < work.length; j++) {
 					console.log(work[j].turnado,"---");
 					if (work[j].turnado) {
+						idini=work[j].id;
 						inicom=work[j].turnado.split( ".-" ); //".-Diputados -");
 						inicom.pop();
 						inicom.shift();
 						for (var k = 0; k < inicom.length; k++) {
-							truecom=levPicker(inicom[k],comsdip);
+							truecom=levPicker0(inicom[k],comsdip);
 							console.log("-->",inicom[k],"-->",truecom[0],truecom[1]);
 							temas[ truecom[1] ]+=1;
+							if (truecom[1].length>3) {
+								temas2[idini]=truecom[1];
+								console.log("addin",truecom[1])
+							}
 						}
 					}
 				}
 				//La lista se salva en e campo "temas"
-				app.models[ "diputados" ].update({id:subject.id},{temas:temas}).exec(function afterwards(err, updated){//{trayectoria:dip.trayectoria , silid:dip.uriid}).exec(function afterwards(err, updated){
+				app.models[ "diputados" ].update({id:subject.id},{temas:temas,temas2:temas2}).exec(function afterwards(err, updated){//{trayectoria:dip.trayectoria , silid:dip.uriid}).exec(function afterwards(err, updated){
 				  	console.log("temas updated",updated[0].temas);
 					callback();
 				});
@@ -431,10 +474,29 @@ function levPicker(str,obj){ //cicla un array para obtener el mejor match (leven
 		}
 		
 	}
-	if (max>10) {return ["-","-"];}
+	if (max>20) {return ["-","-"];}
 	else{
 		return [standard(maxname),standard(obj[maxname]) ];
 	}
+	
+}
+function levPicker0(str,obj){ //cicla un array para obtener el mejor match (levenshtein) en el
+	max=100;
+	maxname="none";
+	for (name in obj) {
+		if (str && str.length>0 && name && name.length>0) {
+			ratio=levMatcher( standard(str) , standard(name) );
+			if (ratio<max) {
+				max=ratio;
+				maxname=name;
+			}
+		}
+		
+	}
+	// if (max>20) {return ["-","-"];}
+	// else{
+		return [standard(maxname),standard(obj[maxname]) ];
+	//}
 	
 }
 function levMatcher(st1,st2){ //implementción de comparación de levenshtein

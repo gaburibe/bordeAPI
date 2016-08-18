@@ -24,7 +24,7 @@ Object.size = function(obj) {
 
 module.exports = module.export =
 {
-	bs1v3: function (req, res, app, cb){ //BS1 versión 1.3
+	bs1v3: function (camara, req, res, app, cb){ //BS1 versión 1.3
 		async.series({
 			inis:function (next){
 				next(null,[]); // COMENTADO PUESTO QUE SE SACA TODA LA INFIORMACIÓN EN "makelist"
@@ -41,14 +41,14 @@ module.exports = module.export =
 			},
 			list:function (next){
 				date=moment();
-				makelist( "senadores" , "Federal" , app ,function (status,dips){
+				makelist( camara , "Federal" , app ,function (status,dips){
 					next(null,dips);
 				})
 			}
 		} , function(err, results){
 			//console.log("subjects",results.list.length);
 			date=moment();
-			bs1=trabajo_legis(results.list);
+			trabajo_legis(results.list,app,res);
 			//bs1Suma(inisr);
 			// bordescore3(results.inis , results.pas ,results.list, date , app , function( bs ){
 			// 	mean=sstats.mean([0, 10]);
@@ -156,8 +156,8 @@ module.exports = module.export =
 		
 		
 	},
-	BS2: function ( req, res, app, cb ){
-		makelist("senadores" , "federal" , app , function(err,dips){
+	BS2: function ( camara, req, res, app, cb ){
+		makelist( camara , "federal" , app , function(err,dips){
 			console.log("BS2 paso1:",dips.length);
 			puestoscamara={};
 			puestospartido={};
@@ -249,14 +249,35 @@ module.exports = module.export =
 							puesto:"-",
 							score:score
 						};
-						console.log("res",camp[idd].score,camp2[idd].score,score)
+						//console.log("res","id:"+idd,camp[idd].score,camp2[idd].score,score)
 				puestosbs2[idd].push( tk );
 			}
 
 			campbs2=campana(puestosbs2,100);
+			scarr={};
 			for(idd in campbs2){ //para hacer reporte
-				//console.log(idd,";",namedict[idd],";",camp[idd].score,";",camp2[idd].score,";",campbs2[idd].score,";",campbs2[idd].nscore);
+				console.log(idd,";",namedict[idd],";",camp[idd].score,";",camp2[idd].score,";",campbs2[idd].score,";",campbs2[idd].nscore);
+				console.log("res","id:"+idd,camp[idd].score,camp2[idd].score,campbs2[idd].score);
+				scarr[idd]={
+					id:idd,
+					bs2_1:camp[idd].nscore,
+					bs2_2:camp2[idd].nscore,
+					bs2:campbs2[idd].nscore,
+
+				}
 			}
+			async.forEachSeries(scarr, function(subjectscore, callback) { 
+	       		
+				//La lista se salva en e campo "BS2"
+				app.models[ "diputados" ].update({id:subjectscore.id},{ BS2:subjectscore }).exec(function afterwards(err, updated){//{trayectoria:dip.trayectoria , silid:dip.uriid}).exec(function afterwards(err, updated){
+				  	console.log("score BS2 updated",id,updated[0].BS2);
+					callback();
+				});
+				
+
+		    }, function(err) {
+		        res.end("DONE")
+		    });
 
 			// console.log("c1",camp);
 			// console.log("c2",camp2);
@@ -266,7 +287,153 @@ module.exports = module.export =
 		});
 
 
+	},
+	BS: function ( camara, req, res, app, cb ){
+		app.models[ "diputados" ].find({ camara:camara, ordenDeGobierno: "federal" }).exec(function (err, dips){
+			BSS={}; //borde score completo
+			for (var i = dips.length - 1; i >= 0; i--) {
+				dip=dips[i];
+				console.log(dip.id,dip.BS1,dip.BS2)
+				if ( dip.BS1 && dip.BS2 ) {
+
+					bsf=dip.BS1.BS1*.7 + dip.BS2.bs2*.3;
+					
+					BSS[dip.id]=[];
+					BSS[dip.id].push( {tipo:"BSF",score:bsf} );
+				}
+				
+			}
+			campana_bsf=campana(BSS,100);
+			console.log("campana",BSS,campana_bsf);
+			async.forEachSeries(dips, function(subject, callback) { 
+				BSA={};
+				if (campana_bsf[subject.id]) {
+					sbsf=campana_bsf[subject.id].nscore;
+		       		BS={ // Para gráficas
+		       			camara:"diputados",
+		       			document:{
+
+		       			}
+		       		};
+		       		BSA={BSA:sbsf, trabajo:subject.BS1.BS1*.7,rol:subject.BS2.bs2*.3};
+		       		
+					//La lista se salva en e campo "BS2"
+					app.models[ "diputados" ].update({id:subject.id},{ BSA:BSA }).exec(function afterwards(err, updated){//{trayectoria:dip.trayectoria , silid:dip.uriid}).exec(function afterwards(err, updated){
+					  	console.log("score BSA updated",updated[0].id,updated[0].BSA);
+						callback();
+					});
+				}
+	       		else{
+	       				callback();
+	       		}
+
+		    }, function(err) {
+		        res.end("DONE")
+		    });
+		});
+	},
+	graphs: function ( camara, req, res, app, cb ){
+		app.models[ "diputados" ].find({ camara:camara, ordenDeGobierno: "federal" }).exec(function (err, dips){
+			date=moment();
+			score={};
+			bsr=[];
+			bsini=[];
+			bsdeb=[];
+			bspa=[];
+
+			dat2=date.toString();
+			for (key in dips) {
+				sen=dips[key];
+				id=sen.id;
+				console.log(id,sen.BSA );
+
+				if (sen.BSA ) {
+					//BS
+					if ( bsr[sen.BSA.BSA]) {
+						bsr[sen.BSA.BSA].name.push({name:sen.name,party:sen.party,id:id}); //+=","+dips[id].name;
+					}
+					else{
+						bsr[sen.BSA.BSA]={y:sen.BSA.BSA,name:[ {name:sen.name,party:sen.party,id:id} ]}
+					}
+					// bsr=scoreorder(bsr);
+					//inis
+					if (bsini[sen.BS1.iniciativas]) {
+						bsini[sen.BS1.iniciativas].name.push({name:sen.name,party:sen.party,id:id});//+=","+dips[id].name;
+					}
+					else{
+						bsini[sen.BS1.iniciativas]={y:sen.BS1.iniciativas,name:[ {name:sen.name,party:sen.party,id:id} ]}
+					}
+					// bsini=scoreorder(bsini);
+					//pas
+					if (bspa[sen.BS1.puntosdeacuerdo]) {
+						bspa[sen.BS1.puntosdeacuerdo].name.push({name:sen.name,party:sen.party,id:id});
+					}
+					else{
+						bspa[sen.BS1.puntosdeacuerdo]={y:sen.BS1.puntosdeacuerdo,name:[ {name:sen.name,party:sen.party,id:id} ]}
+					}
+					// bspa=scoreorder(bspa);
+					if (bsdeb[sen.BS1.debate]) {
+						bsdeb[sen.BS1.debate].name.push({name:sen.name,party:sen.party,id:id});//+=","+dips[id].name;
+					}
+					else{
+						bsdeb[sen.BS1.debate]={y:sen.BS1.debate,name: [ {name:sen.name,party:sen.party,id:id} ]}
+					}
+					// bsdeb=scoreorder(bsdeb);
+				}
+				
+			}
+			bsr2=[]
+			bsini2=[]
+			bspa2=[]
+			bsdeb2=[]
+			for(i=0;i<=100;i++){
+				if (bsr[i]) {
+					for(dim in bsr[i].name){
+						bsr2.push({y:i,name:bsr[i].name[dim]});
+					}
+				}
+				if (bsini[i]) {
+					for(dim in bsini[i].name){
+						bsini2.push({y:i,name:bsini[i].name[dim]});
+					}
+				}
+				if (bspa[i]) {
+					for(dim in bspa[i].name){
+						bspa2.push({y:i,name:bspa[i].name[dim]});
+					}
+				}
+				if (bsdeb[i]) {
+					for(dim in bsdeb[i].name){
+						bsdeb2.push({y:i,name:bsdeb[i].name[dim]});
+					}
+				}
+
+			}
+			score.bs=bsr2;
+			score.ini=bsini2;
+			score.pa=bspa2;
+			score.deb=bsdeb2;
+			console.log(score)
+			app.models[ "bs" ].create( {camara:camara,date:dat2,document:score} ).exec(function createCB(err, created){
+		            console.log("BS created",err,created);
+		    });
+				
+		});
 	}
+}
+function scoreorder(list){
+	nulist=[];
+	for(i=100;i>=0;i--){
+		if(list[i]){
+			names=list[i].name;
+			for(key in names){
+				nulist.push( {y:i, name:[ names[key] ] } );
+			}
+		}
+		
+		
+	}
+	return nulist;
 }
 function pa_score(list){
 
@@ -275,7 +442,7 @@ function bs1Suma(trabajo){
 
 
 }
-function trabajo_legis(list){
+function trabajo_legis(list,app,res){
 	dips={};
 	coleccion_i={};
 	coleccion_pa={};
@@ -307,7 +474,15 @@ function trabajo_legis(list){
 		dips[legis.name]={presentadas:0,aprobadas:0,pas:0}
 		dips[legis.name].pas=0;
 		dips[legis.name].asistencia=legis.asistencia;
-		dips[legis.name].debatelist=legis.debatelist;
+		if (legis.debate && legis.debate.length>1) {
+			dips[legis.name].debatelist=legis.debate;
+			console.log("debate",legis.debate.length)
+		}
+		else{
+			dips[legis.name].debatelist=legis.debatelist;
+			console.log("debatelist",legis.debatelist.length)
+		}
+		
 		// dips[iddip]={ medios:0 , debate:0, inis:0 , pas:0 , asistencia:0 , bs:0 };
 		for (var j = 0; j < legis.work.length; j++) {
 			type=legis.work[j].type;
@@ -460,14 +635,23 @@ function trabajo_legis(list){
         	id=dip.id;
         	coleccion_BS1[id]=[];
         	asistencias=Math.max(campana_asist[id].score, 90);
-        	score=( campana_i[id].score*.3+campana_pa[id].score*.1+campana_deb[id].score*.2 )*asistencias*.1;
+        	score=( campana_i[id].nscore*.3+campana_pa[id].nscore*.1+campana_deb[id].nscore*.2 )*asistencias*.1;
         	coleccion_BS1[id].push( {tipo:"BS1",score:score} );
         }
         //Hacer campana para calcular con BS2
         campana_BS1=campana(coleccion_BS1,100);
         console.log("campana BS1:",campana_BS1);
+        scarr={};
         for(id in campana_BS1){
         	nnamee=namedict[id];
+        	scarr[id]={
+					id:id,
+					iniciativas:campana_i[id].nscore,
+					puntosdeacuerdo:campana_pa[id].nscore,
+					debate:campana_deb[id].nscore,
+					asistencia:campana_asist[id].nscore,
+					BS1:campana_BS1[id].nscore
+				}
         	console.log(
         			nnamee+";",
         			campana_i[id].nscore+";",
@@ -477,7 +661,19 @@ function trabajo_legis(list){
         			campana_BS1[id].nscore
         		);
         }
-        return campana_BS1;
+        async.forEachSeries(scarr, function(subjectscore, callback) { 
+	       		
+				//La lista se salva en e campo "BS2"
+			app.models[ "diputados" ].update({id:subjectscore.id},{ BS1:subjectscore }).exec(function afterwards(err, updated){//{trayectoria:dip.trayectoria , silid:dip.uriid}).exec(function afterwards(err, updated){
+			  	console.log("score BS1 updated",updated[0].id,updated[0].BS1);
+				callback();
+			});
+			
+
+	    }, function(err) {
+	        res.end("DONE");
+	    });
+        // return campana_BS1;
 
     });
 }

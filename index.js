@@ -132,9 +132,7 @@ app.get('/borde/federal/historico/sen',function(req, res, next) {
 app.get('/borde/federal/historico/dip',function(req, res, next) {
   borde_fed.dipH(req, res, app, next);
 })
-app.get('/borde/score/bs1/sen',function(req, res, next) {
-  borde_fed.bs1v3(req, res, app, next);
-})
+
 app.get('/borde/record/dip',function(req, res, next) {
   borde_fed.record(req, res, app, next);
 })
@@ -142,9 +140,31 @@ app.get('/borde/record/sen',function(req, res, next) {
   borde_fed.senchafa(req, res, app, next);
 })
 
-app.get('/borde/federal/BS2/sen',function(req, res, next) { //Calcula BS2
-  borde_fed.BS2(req, res, app, next);
+app.get('/borde/score/bs1/sen',function(req, res, next) {
+  borde_fed.bs1v3("senadores",req, res, app, next);
 })
+app.get('/borde/score/bs1/dip',function(req, res, next) {
+  borde_fed.bs1v3("diputados",req, res, app, next);
+})
+app.get('/borde/federal/BS2/sen',function(req, res, next) { //Calcula BS2
+  borde_fed.BS2("senadores", req, res, app, next);
+})
+app.get('/borde/federal/BS2/dip',function(req, res, next) { //Calcula BS2
+  borde_fed.BS2("diputados", req, res, app, next);
+})
+app.get('/borde/federal/BSF/sen',function(req, res, next) { //Calcula BS FINAL
+  borde_fed.BS("senadores", req, res, app, next);
+})
+app.get('/borde/federal/BSF/dip',function(req, res, next) { //Calcula BS FINAL
+  borde_fed.BS("diputados", req, res, app, next);
+})
+app.get('/borde/federal/graphs/sen',function(req, res, next) { //Calcula BS2
+  borde_fed.graphs("senadores", req, res, app, next);
+})
+app.get('/borde/federal/graphs/dip',function(req, res, next) { //Calcula BS2
+  borde_fed.graphs("diputados", req, res, app, next);
+})
+
 
 
 // app.get('/crawl/federal/pas',function(req, res, next) {
@@ -189,6 +209,13 @@ app.get('/utilities/linkTemas/senadores',function(req, res, next) { //para ligar
 app.get('/utilities/statsComisiones',function(req, res, next) { //para ligar temas desde inciativas
   crawl_u.statsComisiones(req, res, app, next);
 })
+app.get('/utilities/makemealist',function(req, res, next) { //para ligar temas desde inciativas
+  crawl_u.makeMeAList(req, res, app, next);
+})
+app.get('/utilities/addFromJson',function(req, res, next) { //para ligar temas desde inciativas
+  crawl_u.addFromJson(req, res, app, next);
+})
+
 
 
 app.listen(port)
