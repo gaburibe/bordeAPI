@@ -1,1 +1,0 @@
-score2.js
