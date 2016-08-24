@@ -2,7 +2,6 @@ var express = require('express');
 var bodyParser = require('body-parser');
 var app = express();
 var legisladores = require('./apps/legisladores');
-var news = require('./apps/news');
 var trabajo = require('./apps/trabajo');
 var pagina = require('./apps/pagina');
 var borde_fed = require('./borde/score');
@@ -62,18 +61,7 @@ app.delete('/diputados/', function(req, res, next) {
   legisladores.del( req, res, app, next );
 });
 //NEWS
-app.post('/news/', function(req, res, next) {
-  // res.setHeader('Access-Control-Allow-Origin', '*');
-  news.post( req, res, app, next );
-});
-app.post('/news/get', function(req, res, next) {
-  // res.setHeader('Access-Control-Allow-Origin', '*');
-  news.get( req, res, app, next );
-});
-app.delete('/news/', function(req, res, next) {
-  // res.setHeader('Access-Control-Allow-Origin', '*');
-  news.del( req, res, app, next );
-});
+
 app.post('/diputados/news', function(req, res, next) {
   // res.setHeader('Access-Control-Allow-Origin', '*');
   legisladores.postnews( req, res, app, next );
@@ -120,6 +108,13 @@ app.get('/crawl/federal/asistenciaDip',function(req, res, next) { //para ligar t
 })
 app.get('/crawl/federal/debate/dip',function(req, res, next) { //Calcula BS2
   crawl_fed.debatedips(req, res, app, next);
+})
+//TRES DE TRES
+app.get('/crawl/3d3/dip',function(req, res, next) { //Calcula BS2
+  crawl_u.tresdetres("diputados", req, res, app, next);
+})
+app.get('/crawl/3d3/sen',function(req, res, next) { //Calcula BS2
+  crawl_u.tresdetres("senadores", req, res, app, next);
 })
 
 //Análisis

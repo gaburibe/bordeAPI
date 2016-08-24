@@ -459,6 +459,39 @@ module.exports = module.export =
 					
 
 		});
+	},
+	tresdetres: function ( camara, req, res, app, cb ){ //crawl página de tres de tres
+		dipnames={};
+		app.models[ "diputados" ].find({ camara:camara }, { name: 1 }).exec(function createCB(err, list){ 
+			for(subject in list){
+				dip=list[subject];
+				dipnames[dip.name]=dip.id;
+			}
+			if (camara=="diputados") {c.queue('http://3de3.mx/api/apiv1/2015/candidatos/ganadores?cargo=Diputado%20Federal');} //llamada API página
+			if (camara=="senadores") {c.queue('http://3de3.mx/api/apiv1/2015/candidatos/ganadores?cargo=Senador');} //llamada API página
+			
+			
+		});
+		var c = new Crawler({
+		    maxConnections : 2,
+		    forceUTF8:true,	
+		    callback : function (error, result, $) {
+		    	res = JSON.parse(result.body);
+		    	sitienen=res.candidatos;
+		    	async.forEachSeries(sitienen, function(legis, callback) {
+		    		match=levPicker0(legis.nombres+" "+legis.apellido_paterno+" "+legis.apellido_materno,dipnames);
+		    		console.log(legis.nombres+" "+legis.apellido_paterno+" "+legis.apellido_materno,"-->",match);
+		    		app.models[ "diputados" ].update({name:match[0]},{tresdetres:1}).exec(function afterwards(err, updated){
+					  	console.log('Updated',updated,err);	
+					  	callback();
+					});
+		    	}, function(err) {
+		    		console.log("DONE");
+		    	});
+		        
+		    }
+		});
+		
 	}
 }
 function levPicker(str,obj){ //cicla un array para obtener el mejor match (levenshtein) en el
