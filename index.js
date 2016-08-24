@@ -123,44 +123,24 @@ app.get('/crawl/federal/debate/dip',function(req, res, next) { //Calcula BS2
 })
 
 //Análisis
-//Calcula borde score senadores
-app.get('/borde/federal/historico/sen',function(req, res, next) {
-  borde_fed.senH(req, res, app, next);
-})
-//Calcula borde score senadores
-app.get('/borde/federal/historico/dip',function(req, res, next) {
-  borde_fed.dipH(req, res, app, next);
-})
 
-app.get('/borde/record/dip',function(req, res, next) {
-  borde_fed.record(req, res, app, next);
-})
-app.get('/borde/record/sen',function(req, res, next) {
-  borde_fed.senchafa(req, res, app, next);
-})
 
-app.get('/borde/score/bs1/sen',function(req, res, next) {
+app.get('/borde/score/bs1/sen',function(req, res, next) { //BS1 V1.3
   borde_fed.bs1v3("senadores",req, res, app, next);
 })
-app.get('/borde/score/bs1/dip',function(req, res, next) {
+app.get('/borde/score/bs1/dip',function(req, res, next) { //BS1 V1.3
   borde_fed.bs1v3("diputados",req, res, app, next);
 })
-app.get('/borde/federal/BS2/sen',function(req, res, next) { //Calcula BS2
+app.get('/borde/federal/BS2/sen',function(req, res, next) { // Calcula BS2 V1.0
   borde_fed.BS2("senadores", req, res, app, next);
 })
-app.get('/borde/federal/BS2/dip',function(req, res, next) { //Calcula BS2
+app.get('/borde/federal/BS2/dip',function(req, res, next) { // Calcula BS2 V1.0
   borde_fed.BS2("diputados", req, res, app, next);
 })
-app.get('/borde/federal/BSF/sen',function(req, res, next) { //Calcula BS FINAL
-  borde_fed.BS("senadores", req, res, app, next);
-})
-app.get('/borde/federal/BSF/dip',function(req, res, next) { //Calcula BS FINAL
-  borde_fed.BS("diputados", req, res, app, next);
-})
-app.get('/borde/federal/graphs/sen',function(req, res, next) { //Calcula BS2
+app.get('/borde/federal/graphs/sen',function(req, res, next) { // Prepara gráficas
   borde_fed.graphs("senadores", req, res, app, next);
 })
-app.get('/borde/federal/graphs/dip',function(req, res, next) { //Calcula BS2
+app.get('/borde/federal/graphs/dip',function(req, res, next) { // Prepara gráficas
   borde_fed.graphs("diputados", req, res, app, next);
 })
 
