@@ -110,11 +110,19 @@ app.get('/crawl/federal/debate/dip',function(req, res, next) { //Calcula BS2
   crawl_fed.debatedips(req, res, app, next);
 })
 //TRES DE TRES
-app.get('/crawl/3d3/dip',function(req, res, next) { //Calcula BS2
-  crawl_u.tresdetres("diputados", req, res, app, next);
+
+app.get('/crawl/3d3fix/sen',function(req, res, next) { //Crawl 3 de 3, twitter y fix nombres
+  crawl_u.tresdetresFix("senadores", req, res, app, next);
 })
-app.get('/crawl/3d3/sen',function(req, res, next) { //Calcula BS2
-  crawl_u.tresdetres("senadores", req, res, app, next);
+app.get('/crawl/3d3fix/dip',function(req, res, next) { //Crawl 3 de 3, twitter y fix nombres
+  crawl_u.tresdetresFix("diputados", req, res, app, next);
+})
+//KLOUT
+app.get('/crawl/klout/sen',function(req, res, next) { //Crawl klout a partir de twitter
+  crawl_u.klout( "senadores",req, res, app, next);
+})
+app.get('/crawl/klout/dip',function(req, res, next) { //Crawl klout a partir de twitter
+  crawl_u.klout( "diputados",req, res, app, next);
 })
 
 //Análisis

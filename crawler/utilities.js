@@ -9,6 +9,8 @@ var Iconv  = require('iconv').Iconv;
 var async=require('async');
 var moment=require('moment');
 var Levenshtein=require('levenshtein');
+var Klout = require("node_klout"),
+    klout = new Klout("99h2jp3negmh38pyuuvu2jkr");
 moment.locale('es');
 var news_array=[];
 var bscore={}
@@ -460,7 +462,48 @@ module.exports = module.export =
 
 		});
 	},
-	tresdetres: function ( camara, req, res, app, cb ){ //crawl página de tres de tres
+	klout: function ( camara, req, res, app, cb ){ //crawl página de tres de tres
+		dipnames={};
+		app.models[ "diputados" ].find({ camara:camara }, { name: 1, twitter:1 }).limit(1000).exec(function createCB(err, list){ 
+			
+			async.forEachSeries(list, function(legis, callback) {
+				if (legis.twitter && legis.twitter.length >1) {
+					getKlout(legis.twitter,function cb(response){
+						console.log("lo hice");
+						app.models[ "diputados" ].update(legis.id,{
+			    			kloutscore:response.score
+			    		}).exec(function afterwards(err, updated){
+						  	console.log('Updated',updated,err);	
+						  	callback();
+						});
+					});
+
+				}
+				else{
+					callback();
+				}
+	    		
+	    		
+	    	}, function(err) {
+	    		console.log("DONE");
+	    	});
+
+		});
+		
+		// app.models[ "diputados" ].find({ camara:camara }, { name: 1 }).exec(function createCB(err, list){ 
+		// 	for(subject in list){
+		// 		dip=list[subject];
+		// 		dipnames[dip.name]=dip.id;
+		// 	}
+		// 	if (camara=="diputados") {c.queue('http://3de3.mx/api/apiv1/2015/candidatos/ganadores?cargo=Diputado%20Federal');} //llamada API página
+		// 	if (camara=="senadores") {c.queue('http://3de3.mx/api/apiv1/2015/candidatos/ganadores?cargo=Senador');} //llamada API página
+			
+			
+		// });
+		
+		
+	},
+	tresdetresFix: function ( camara, req, res, app, cb ){ //crawl página de tres de  para lista de twitter y nombres
 		dipnames={};
 		app.models[ "diputados" ].find({ camara:camara }, { name: 1 }).exec(function createCB(err, list){ 
 			for(subject in list){
@@ -479,9 +522,21 @@ module.exports = module.export =
 		    	res = JSON.parse(result.body);
 		    	sitienen=res.candidatos;
 		    	async.forEachSeries(sitienen, function(legis, callback) {
+		    		l_3de3=0;
+		    		l_twitter="";
+
+		    		if (legis.patrimonial) {l_3de3=1;}
+		    		if (legis.twitter) { l_twitter=legis.twitter }
+
 		    		match=levPicker0(legis.nombres+" "+legis.apellido_paterno+" "+legis.apellido_materno,dipnames);
 		    		console.log(legis.nombres+" "+legis.apellido_paterno+" "+legis.apellido_materno,"-->",match);
-		    		app.models[ "diputados" ].update({name:match[0]},{tresdetres:1}).exec(function afterwards(err, updated){
+		    		app.models[ "diputados" ].update({name:match[0]},{
+		    			tresdetres:l_3de3,
+		    			twitter:l_twitter,
+		    			nombres:legis.nombres,
+		    			apellido_paterno:legis.apellido_paterno,
+		    			apellido_materno:legis.apellido_materno,
+		    		}).exec(function afterwards(err, updated){
 					  	console.log('Updated',updated,err);	
 					  	callback();
 					});
@@ -559,5 +614,14 @@ function cleancom(turno){
 	r=r.replace(/Senadores/gi, "");
 	r=r.replace(/Para opinión/gi, "");
 	return r;
+}
+function getKlout(twt,cb){ //obtiene el klout score a partir de la cuenta de twuitter
+	klout.getKloutIdentity(twt, function(error, klout_user) {
+		   console.log(error, klout_user);
+		   klout.getUser(klout_user.id, function(error, klout_response) {
+			    console.log(klout_response);
+			    cb(klout_response);
+			});
+		});
 }
 
