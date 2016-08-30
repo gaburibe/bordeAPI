@@ -616,6 +616,7 @@ function cleancom(turno){
 	return r;
 }
 function getKlout(twt,cb){ //obtiene el klout score a partir de la cuenta de twuitter
+	console.log(twt);
 	klout.getKloutIdentity(twt, function(error, klout_user) {
 		   console.log(error, klout_user);
 		   klout.getUser(klout_user.id, function(error, klout_response) {

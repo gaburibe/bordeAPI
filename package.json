@@ -15,6 +15,7 @@
     "chai": "^3.5.0",
     "crawler": "^0.4.3",
     "express": "^4.13.4",
+    "google-search": "0.0.4",
     "http": "0.0.0",
     "http-get": "^0.5.10",
     "iconv": "^2.1.11",

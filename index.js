@@ -8,6 +8,7 @@ var borde_fed = require('./borde/score');
 
 var crawl_fed = require('./crawler/federal');
 var crawl_u = require('./crawler/utilities');
+var news_fed = require('./crawler/news');
 
 var port="8080";
 app.use(bodyParser.json());
@@ -124,6 +125,12 @@ app.get('/crawl/klout/sen',function(req, res, next) { //Crawl klout a partir de 
 app.get('/crawl/klout/dip',function(req, res, next) { //Crawl klout a partir de twitter
   crawl_u.klout( "diputados",req, res, app, next);
 })
+//Google seacrch
+app.get('/crawl/google',function(req, res, next) { //Crawl klout a partir de twitter
+  news_fed.google( "diputados",req, res, app, next);
+})
+
+
 
 //Análisis
 
