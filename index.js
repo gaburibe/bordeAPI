@@ -127,7 +127,7 @@ app.get('/crawl/klout/dip',function(req, res, next) { //Crawl klout a partir de 
 })
 //Google seacrch
 app.get('/crawl/google',function(req, res, next) { //Crawl klout a partir de twitter
-  news_fed.google( "diputados",req, res, app, next);
+  news_fed.google( req, res, app, next);
 })
 
 

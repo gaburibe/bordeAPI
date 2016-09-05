@@ -145,6 +145,10 @@ var diputados = Waterline.Collection.extend({
     comision: {
       collection: 'comisiones',
       via: 'members',
+    },
+    //Utilidades de crawl
+    c_news: {
+      type: 'string'
     }
   }
 });
