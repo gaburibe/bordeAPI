@@ -9,6 +9,7 @@ var borde_fed = require('./borde/score');
 var crawl_fed = require('./crawler/federal');
 var crawl_u = require('./crawler/utilities');
 var news_fed = require('./crawler/news');
+var flux = require('./apps/flux');
 
 var port="8080";
 app.use(bodyParser.json());
@@ -205,6 +206,13 @@ app.get('/utilities/addFromJson',function(req, res, next) { //para ligar temas d
   crawl_u.addFromJson(req, res, app, next);
 })
 
+
+//FLUX CONTROL
+app.get('/flux/4',function(req, res, next) { //último paso, generación de json
+  flux.createPortada(app,res, function(){
+    res.end("miau");
+  });
+})
 
 
 app.listen(port)
