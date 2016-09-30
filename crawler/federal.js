@@ -14,7 +14,7 @@ var pdfText = require('pdf-text');
 
 
 function nextdip(){
-
+	getLast(app);
 }
 
 module.exports = module.export =
@@ -295,6 +295,12 @@ module.exports = module.export =
 			c.queue('http://www.senado.gob.mx/index.php?ver=int&mn=4&sm=1&str='+alf[i]);
 		};
 	},
+	trabajoAuto: function ( req, res, app, cb ){ // Adquiere trabajo legislativo completo
+		getLast(app,function (last){
+			console.log(last);
+		});
+		
+	},
 	pas: function ( req, res, app, cb ){ // Adquiere trabajo legislativo completo
 		console.log("puntos de acuerdo")
 		console.log("P A's")
@@ -562,7 +568,14 @@ module.exports = module.export =
 }
 
 //FUNCIONES DE APOYO PARA EL MÓDULO
-
+function getLast(app,next){
+	app.models[ "trabajo" ].find({}).sort({presentacion:-1}).limit(100).exec(function (err, result){
+		for(x in result){
+			console.log(x.presentacion);
+		}
+		next(result[0].presentacion);
+	});
+}
 function processdebate(id,done){
 	var c = new Crawler({
 		forceUTF8:true,

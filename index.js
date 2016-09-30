@@ -102,6 +102,7 @@ app.get('/crawl/federal/iniciativas',function(req, res, next) {
 app.get('/crawl/federal/pas',function(req, res, next) {
   crawl_fed.pas(req, res, app, next);
 })
+
 app.get('/crawl/federal/dipasist',function(req, res, next) {
   crawl_fed.dipAsist(req, res, app, next);
 })
@@ -110,6 +111,10 @@ app.get('/crawl/federal/asistenciaDip',function(req, res, next) { //para ligar t
 })
 app.get('/crawl/federal/debate/dip',function(req, res, next) { //Calcula BS2
   crawl_fed.debatedips(req, res, app, next);
+})
+//AUTO
+app.get('/crawl/federal/autowork',function(req, res, next) { //obtiene el trabajo sabiendo cuando fue la última fecha de scrapping 
+  crawl_fed.trabajoAuto(req, res, app, next);
 })
 //TRES DE TRES
 
